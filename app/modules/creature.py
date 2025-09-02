@@ -15,7 +15,6 @@ class Creature:
     self.speed = config_stats['speed']
     self.special_abilities = config_stats['special_abilities']
     self.statuses = {}
-    self.action_rewards = 0.0
 
     # Base actions
     self.actions = [

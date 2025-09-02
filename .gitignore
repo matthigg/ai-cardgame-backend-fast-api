@@ -1,4 +1,14 @@
+# Ignore Python bytecode files
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore __pycache__ directories
+__pycache__/
+
 battle_logs/
 checkpoints/
 venv313/
 .vscode
+build/
+dist/
