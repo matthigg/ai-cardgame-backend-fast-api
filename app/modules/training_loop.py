@@ -6,7 +6,7 @@ from app.modules.creature import Creature
 from app.modules.battle_simulation import simulate_battle
 from app.modules.logging_utils import write_logs
 from app.modules.neural_network import NeuralNetwork, reinforce_update
-from app.modules.network_persistence import resume_from_checkpoint, save_best_checkpoint
+from app.modules.network_persistence import resume_from_checkpoint, save_checkpoints
 
 # ------------------ Training Loop ------------------
 
@@ -28,12 +28,7 @@ def training_loop():
   optimizer_A = optim.Adam(creature_A.nn.parameters(), lr=CONFIG['learning_rate'])
   optimizer_B = optim.Adam(creature_B.nn.parameters(), lr=CONFIG['learning_rate'])
 
-  # ✅ Returns dict: {"A": start_epoch_A, "B": start_epoch_B}
-  start_epochs = resume_from_checkpoint(creature_A, creature_B, optimizer_A, optimizer_B)
-
-  # Track separately
-  epoch_A = start_epochs["A"]
-  epoch_B = start_epochs["B"]
+  resume_from_checkpoint(creature_A, creature_B, optimizer_A, optimizer_B)
 
   baseline_A, baseline_B = 0.0, 0.0
   batched_logs, batched_logs_total = [], []
@@ -41,20 +36,11 @@ def training_loop():
   epsilon = CONFIG['epsilon']
   wins = {creature_A.name: 0, creature_B.name: 0}
 
-  best_reward_A, best_reward_B = -float('inf'), -float('inf')
-  last_epoch = max(epoch_A, epoch_B) - 1
-
-  for batch_epoch in range(CONFIG['epochs']):
-    # Each creature may be at a different "true epoch"
-    current_epoch_A = epoch_A + batch_epoch
-    current_epoch_B = epoch_B + batch_epoch
-    epoch = max(current_epoch_A, current_epoch_B)
-    last_epoch = epoch
-
+  for epoch in range(CONFIG['epoch_batch_size']):
     epsilon = max(CONFIG['eps_min'], epsilon * CONFIG['eps_decay_rate'])
 
     reward_A, reward_B, battle_log, winner = simulate_battle(
-      creature_A, creature_B, epoch, CONFIG['batch_size'], epsilon
+      creature_A, creature_B, epoch, CONFIG['log_batch_size'], epsilon
     )
 
     reinforce_update(creature_A, optimizer_A, battle_log, baseline_A, CONFIG['entropy_beta'])
@@ -63,18 +49,12 @@ def training_loop():
     baseline_A = (1 - CONFIG['alpha_baseline']) * baseline_A + CONFIG['alpha_baseline'] * reward_A
     baseline_B = (1 - CONFIG['alpha_baseline']) * baseline_B + CONFIG['alpha_baseline'] * reward_B
 
-    if winner:
-      wins[winner] += 1
-      best_reward_A, best_reward_B = save_best_checkpoint(
-        epoch, best_reward_A, best_reward_B, reward_A, reward_B,
-        creature_A, creature_B, optimizer_A, optimizer_B
-      )
-
     batched_logs.append((epoch, battle_log, reward_A, reward_B, wins[creature_A.name], wins[creature_B.name]))
     batched_logs_total.append((epoch, battle_log, reward_A, reward_B, wins[creature_A.name], wins[creature_B.name]))
 
-    if len(batched_logs) % CONFIG['batch_size'] == 0:
-      write_logs(batched_logs, last_epoch, finalLog=False)
+    if len(batched_logs) % CONFIG['log_batch_size'] == 0:
+      write_logs(batched_logs, epoch, finalLog=False)
       batched_logs = []
 
-  write_logs(batched_logs_total, last_epoch, finalLog=True, finalWins=wins)
+  save_checkpoints(creature_A, creature_B, optimizer_A, optimizer_B)
+  write_logs(batched_logs_total, CONFIG['epoch_batch_size'], finalLog=True, finalWins=wins)

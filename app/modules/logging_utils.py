@@ -41,7 +41,7 @@ def write_logs(batched_logs, last_epoch, finalLog, finalWins=None):
   if finalLog and finalWins and CONFIG['write_battle_summary_log']:
     total_wins_A = finalWins.get('A', 0)
     total_wins_B = finalWins.get('B', 0)
-    epoch_batch_size = CONFIG['epochs']
+    epoch_batch_size = CONFIG['epoch_batch_size']
 
     # Initialize stats
     total_stats = {

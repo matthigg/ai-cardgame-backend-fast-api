@@ -8,14 +8,14 @@ ACTION_NAMES = ['attack', 'defend', 'special', 'recover']
 CONFIG = {
   'seed': 43,
   'use_seed': True,
-  'log_dir': 'battle_logs',
-  'epochs': 100,
-  'batch_size': 50,
+  'epoch_batch_size': 100,
+  'log_batch_size': 50,
 
   'resume_from_checkpoint': True,
   'resume_from_checkpoint_A': './checkpoints/nn_A.pt',
   'resume_from_checkpoint_B': './checkpoints/nn_B.pt',
   'checkpoint_dir': 'checkpoints',
+  'log_dir': 'battle_logs',
 
   'write_battle_logs': False,
   'write_battle_summary_log': True,
