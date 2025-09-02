@@ -12,8 +12,6 @@ CONFIG = {
   'log_batch_size': 50,
 
   'resume_from_checkpoint': True,
-  'resume_from_checkpoint_A': './checkpoints/nn_A.pt',
-  'resume_from_checkpoint_B': './checkpoints/nn_B.pt',
   'checkpoint_dir': 'checkpoints',
   'log_dir': 'battle_logs',
 
@@ -58,6 +56,7 @@ SPECIAL_ABILITIES = {
 
 CREATURES = {
   'C': {
+    'id': 1,
     'hp': 100,
     'max_hp': 100,
     'energy': 100,
@@ -66,6 +65,7 @@ CREATURES = {
     'special_abilities': ['stun', 'poison']
   },
   'B': {
+    'id': 2,
     'hp': 100,
     'max_hp': 100,
     'energy': 100,
