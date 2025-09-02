@@ -1,6 +1,9 @@
 import numpy as np
+import torch.optim as optim
 from app.config import CONFIG, DOT_DAMAGE, SPECIAL_ABILITIES
 from app.modules.logging_utils import append_battle_log
+from app.modules.network_persistence import load_checkpoint
+from app.modules.neural_network import NeuralNetwork
 
 # ------------------ Creature ------------------
 
@@ -63,9 +66,23 @@ class Creature:
       return ability['reward']
     return 0.0
 
-
   def recover(self, opponent=None):
     if self.energy >= self.max_energy:
       return -CONFIG['reward_recover']
     self.energy = min(self.max_energy, self.energy + CONFIG['energy_regen_recover'])
     return CONFIG['reward_recover']
+  
+# ------------------ Initialize Creature ------------------
+
+def init_creatures(creature_dict):
+  creatures = {}
+  optimizers = {}
+  input_size = 4
+  for name, stats in creature_dict.items():
+    nn_output_size = 3 + len(stats['special_abilities'])
+    nn = NeuralNetwork(input_size, CONFIG['hidden_sizes'], nn_output_size)
+    creature = Creature(name, nn, stats)
+    optimizer = optim.Adam(nn.parameters(), lr=CONFIG['learning_rate'])
+    creatures[name] = creature
+    optimizers[name] = optimizer
+  return creatures, optimizers

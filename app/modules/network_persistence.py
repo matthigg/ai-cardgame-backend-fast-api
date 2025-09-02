@@ -14,10 +14,6 @@ def create_checkpoint_file(checkpoint_path, creature, optimizer):
   }, checkpoint_path)
   print(f"✅ Created fresh checkpoint for {creature.name} at epoch 0: {checkpoint_path}")
 
-
-
-
-
 def save_checkpoint(checkpoint_path, creature, optimizer):
   checkpoint = torch.load(checkpoint_path)
   last_epoch = checkpoint.get('epoch', 0)
@@ -30,7 +26,6 @@ def save_checkpoint(checkpoint_path, creature, optimizer):
     'optimizer_state_dict': optimizer.state_dict()
   }, checkpoint_path)
   print(f"💾 Saved checkpoint for {creature.name} at epoch {last_epoch}: {checkpoint_path}")
-
 
 def load_checkpoint(checkpoint_path, creature, optimizer, config_key=None):
   if not os.path.isfile(checkpoint_path):
@@ -52,8 +47,6 @@ def save_checkpoints(creature_A, creature_B, optimizer_A, optimizer_B):
   save_checkpoint(checkpoint_A_path, creature_A, optimizer_A)
   save_checkpoint(checkpoint_B_path, creature_B, optimizer_B)
 
-
-
 def resume_from_checkpoint(creature_A, creature_B, optimizer_A, optimizer_B):
   checkpoint_A_path = f"checkpoints/nn_{creature_A.name}.pt"
   checkpoint_B_path = f"checkpoints/nn_{creature_B.name}.pt"
@@ -64,6 +57,3 @@ def resume_from_checkpoint(creature_A, creature_B, optimizer_A, optimizer_B):
   print("🔄 Checkpoint summary:")
   print(f"  {creature_A.name} -> {checkpoint_A_path} (next epoch: {last_epoch_A})")
   print(f"  {creature_B.name} -> {checkpoint_B_path} (next epoch: {last_epoch_B})")
-
-
-

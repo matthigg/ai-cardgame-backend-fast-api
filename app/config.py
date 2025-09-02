@@ -57,7 +57,7 @@ SPECIAL_ABILITIES = {
 }
 
 CREATURES = {
-  'A': {
+  'C': {
     'hp': 100,
     'max_hp': 100,
     'energy': 100,

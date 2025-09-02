@@ -2,7 +2,7 @@ import os
 import torch.optim as optim
 from tqdm import trange
 from app.config import ACTION_NAMES, CONFIG, CREATURES
-from app.modules.creature import Creature
+from app.modules.creature import Creature, init_creatures
 from app.modules.battle_simulation import simulate_battle
 from app.modules.logging_utils import write_logs
 from app.modules.neural_network import NeuralNetwork, reinforce_update
@@ -14,19 +14,10 @@ def training_loop():
   os.makedirs(CONFIG['log_dir'], exist_ok=True)
   os.makedirs(CONFIG['checkpoint_dir'], exist_ok=True)
 
-  input_size = 4
-
-  nn_A_output_size = 3 + len(CREATURES['A']['special_abilities'])
-  nn_B_output_size = 3 + len(CREATURES['B']['special_abilities'])
-
-  nn_A = NeuralNetwork(input_size, CONFIG['hidden_sizes'], nn_A_output_size)
-  nn_B = NeuralNetwork(input_size, CONFIG['hidden_sizes'], nn_B_output_size)
-
-  creature_A = Creature('A', nn_A, CREATURES['A'])
-  creature_B = Creature('B', nn_B, CREATURES['B'])
-
-  optimizer_A = optim.Adam(creature_A.nn.parameters(), lr=CONFIG['learning_rate'])
-  optimizer_B = optim.Adam(creature_B.nn.parameters(), lr=CONFIG['learning_rate'])
+  creatures, optimizers = init_creatures(CREATURES)
+  creature_names = list(creatures.keys())[:2]  # pick first 2 creatures
+  creature_A, creature_B = creatures[creature_names[0]], creatures[creature_names[1]]
+  optimizer_A, optimizer_B = optimizers[creature_names[0]], optimizers[creature_names[1]]
 
   resume_from_checkpoint(creature_A, creature_B, optimizer_A, optimizer_B)
 
@@ -42,6 +33,9 @@ def training_loop():
     reward_A, reward_B, battle_log, winner = simulate_battle(
       creature_A, creature_B, epoch, CONFIG['log_batch_size'], epsilon
     )
+
+    if winner:
+      wins[winner] += 1
 
     reinforce_update(creature_A, optimizer_A, battle_log, baseline_A, CONFIG['entropy_beta'])
     reinforce_update(creature_B, optimizer_B, battle_log, baseline_B, CONFIG['entropy_beta'])
