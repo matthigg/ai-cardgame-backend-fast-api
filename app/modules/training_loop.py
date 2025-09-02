@@ -16,7 +16,6 @@ def training_loop():
 
   input_size = 4
 
-  # Determine output size dynamically: base actions + number of specials
   nn_A_output_size = 3 + len(CREATURES['A']['special_abilities'])
   nn_B_output_size = 3 + len(CREATURES['B']['special_abilities'])
 
@@ -29,20 +28,27 @@ def training_loop():
   optimizer_A = optim.Adam(creature_A.nn.parameters(), lr=CONFIG['learning_rate'])
   optimizer_B = optim.Adam(creature_B.nn.parameters(), lr=CONFIG['learning_rate'])
 
-  start_epoch = resume_from_checkpoint(creature_A, creature_B, optimizer_A, optimizer_B)
+  # ✅ Returns dict: {"A": start_epoch_A, "B": start_epoch_B}
+  start_epochs = resume_from_checkpoint(creature_A, creature_B, optimizer_A, optimizer_B)
+
+  # Track separately
+  epoch_A = start_epochs["A"]
+  epoch_B = start_epochs["B"]
+
   baseline_A, baseline_B = 0.0, 0.0
-  batched_logs = []
-  batched_logs_total = []
+  batched_logs, batched_logs_total = [], []
 
   epsilon = CONFIG['epsilon']
   wins = {creature_A.name: 0, creature_B.name: 0}
 
   best_reward_A, best_reward_B = -float('inf'), -float('inf')
-
-  last_epoch = start_epoch - 1
+  last_epoch = max(epoch_A, epoch_B) - 1
 
   for batch_epoch in range(CONFIG['epochs']):
-    epoch = start_epoch + batch_epoch
+    # Each creature may be at a different "true epoch"
+    current_epoch_A = epoch_A + batch_epoch
+    current_epoch_B = epoch_B + batch_epoch
+    epoch = max(current_epoch_A, current_epoch_B)
     last_epoch = epoch
 
     epsilon = max(CONFIG['eps_min'], epsilon * CONFIG['eps_decay_rate'])

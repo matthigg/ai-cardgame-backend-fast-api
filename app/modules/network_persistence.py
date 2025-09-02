@@ -65,24 +65,23 @@ def save_best_checkpoint(epoch, best_reward_A, best_reward_B, reward_A, reward_B
 
 def resume_from_checkpoint(creature_A, creature_B, optimizer_A, optimizer_B):
   """
-  Resume training from saved checkpoints.
-  Returns the start epoch for the next training loop.
+  Resume training from saved checkpoints for two creatures.
+  Returns the start epochs per creature.
   """
-  start_epoch = 0
-  if CONFIG.get('resume_from_checkpoint'):
-    start_epoch_A = load_checkpoint(
-      creature_A, optimizer_A, CONFIG['resume_from_checkpoint_A'], 'resume_from_checkpoint_A'
-    )
-    start_epoch_B = load_checkpoint(
-      creature_B, optimizer_B, CONFIG['resume_from_checkpoint_B'], 'resume_from_checkpoint_B'
-    )
-    start_epoch = max(start_epoch_A, start_epoch_B)
+  ckpt_A = f"checkpoints/nn_{creature_A.name}.pt"
+  ckpt_B = f"checkpoints/nn_{creature_B.name}.pt"
 
-    # Summary print
-    print("🔄 Resuming training from checkpoints:")
-    print(f"  {creature_A.name} -> {CONFIG['resume_from_checkpoint_A']} (next epoch: {start_epoch_A})")
-    print(f"  {creature_B.name} -> {CONFIG['resume_from_checkpoint_B']} (next epoch: {start_epoch_B})")
-    print(f"🚀 Training will start at epoch {start_epoch}")
-  else:
-    print("🚀 Starting training from scratch (no resume_from_checkpoint set).")
-  return start_epoch
+  start_epoch_A = load_checkpoint(creature_A, optimizer_A, ckpt_A)
+  start_epoch_B = load_checkpoint(creature_B, optimizer_B, ckpt_B)
+
+  # Summary print
+  print("🔄 Checkpoint summary:")
+  print(f"  {creature_A.name} -> {ckpt_A} (next epoch: {start_epoch_A})")
+  print(f"  {creature_B.name} -> {ckpt_B} (next epoch: {start_epoch_B})")
+
+  return {
+    creature_A.name: start_epoch_A,
+    creature_B.name: start_epoch_B
+  }
+
+
