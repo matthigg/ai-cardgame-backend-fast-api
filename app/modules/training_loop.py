@@ -15,9 +15,13 @@ def training_loop():
   os.makedirs(CONFIG['checkpoint_dir'], exist_ok=True)
 
   input_size = 4
-  output_size = len(ACTION_NAMES)
-  nn_A = NeuralNetwork(input_size, CONFIG['hidden_sizes'], output_size)
-  nn_B = NeuralNetwork(input_size, CONFIG['hidden_sizes'], output_size)
+
+  # Determine output size dynamically: base actions + number of specials
+  nn_A_output_size = 3 + len(CREATURES['A']['special_abilities'])
+  nn_B_output_size = 3 + len(CREATURES['B']['special_abilities'])
+
+  nn_A = NeuralNetwork(input_size, CONFIG['hidden_sizes'], nn_A_output_size)
+  nn_B = NeuralNetwork(input_size, CONFIG['hidden_sizes'], nn_B_output_size)
 
   creature_A = Creature('A', nn_A, CREATURES['A'])
   creature_B = Creature('B', nn_B, CREATURES['B'])
@@ -35,10 +39,8 @@ def training_loop():
 
   best_reward_A, best_reward_B = -float('inf'), -float('inf')
 
-  # Track the last cumulative epoch reached
   last_epoch = start_epoch - 1
 
-  # Each batch runs CONFIG['epochs'] times
   for batch_epoch in range(CONFIG['epochs']):
     epoch = start_epoch + batch_epoch
     last_epoch = epoch
@@ -69,5 +71,4 @@ def training_loop():
       write_logs(batched_logs, last_epoch, finalLog=False)
       batched_logs = []
 
-  # Write final summary for this batch
   write_logs(batched_logs_total, last_epoch, finalLog=True, finalWins=wins)
