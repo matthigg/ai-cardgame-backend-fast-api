@@ -17,8 +17,10 @@ CONFIG = {
   'resume_from_checkpoint_B': './checkpoints/nn_B.pt',
   'checkpoint_dir': 'checkpoints',
 
+  'write_battle_logs': False,
+  'write_battle_summary_log': True,
 
-  'epsilon': 0.3,
+  'epsilon': 0.9,
   'eps_min': 0.05,
   'eps_decay_rate': 0.99,
   'alpha_baseline': 0.05,
@@ -61,7 +63,7 @@ CREATURES = {
     'energy': 100,
     'max_energy': 100,
     'speed': 10,
-    'special_abilities': ['poison', 'stun']
+    'special_abilities': ['stun', 'poison']
   },
   'B': {
     'hp': 100,
@@ -69,10 +71,18 @@ CREATURES = {
     'energy': 100,
     'max_energy': 100,
     'speed': 10,
-    'special_abilities': ['poison', 'stun']
+    'special_abilities': ['stun', 'poison']
   },
 }
 
 if CONFIG['use_seed']:
   np.random.seed(CONFIG['seed'])
   torch.manual_seed(CONFIG['seed'])
+
+
+
+
+
+
+
+

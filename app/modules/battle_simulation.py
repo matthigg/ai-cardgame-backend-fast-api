@@ -18,7 +18,6 @@ def simulate_battle(creature_A, creature_B, epoch, batch_size, epsilon):
 
   for tick in range(batch_size):
     for creature in turn_order:
-
       opponent = creature_B if creature is creature_A else creature_A
       if not creature.is_alive() or not opponent.is_alive():
         continue
@@ -28,26 +27,26 @@ def simulate_battle(creature_A, creature_B, epoch, batch_size, epsilon):
         continue
 
       # Skip turn if stunned
-      if 'Stun' in creature.statuses:
+      if 'stun' in creature.statuses:
         append_battle_log(epoch, tick, creature, opponent, battle_log, '*STUNNED*', zero, -1, 0.0)
         continue
 
-      # Choose and perform action, assign per-action reward
+      # Choose and perform action
       action_idx, probs = choose_action(creature.nn, create_state(creature, opponent), epsilon)
       action_name, action_fn = creature.actions[action_idx]
 
-      # If it's a special, pass the action name to use_special
-      if action_name in creature.special_abilities:
+      # If it's a special, pass ability_name
+      if action_name not in ['attack', 'defend', 'recover']:
         reward = action_fn(opponent, action_name)
       else:
         reward = action_fn(opponent)
+
       rewards[creature.name] += reward
 
       if opponent.is_alive():
         append_battle_log(epoch, tick, creature, opponent, battle_log, action_name, probs, action_idx, reward)
       else:
-
-        # Swap opponent and creature in order to log opponent with *KNOCKOUT* message
+        # Log opponent with *KNOCKOUT* message
         append_battle_log(epoch, tick, opponent, creature, battle_log, '*KNOCKOUT*', zero, -1, 0.0)
 
   # Final win/loss rewards

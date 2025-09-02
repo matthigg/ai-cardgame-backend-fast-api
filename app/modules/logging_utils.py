@@ -28,7 +28,7 @@ def write_logs(batched_logs, last_epoch, finalLog, finalWins=None):
   filenameFinal = os.path.join(CONFIG['log_dir'], f'summary.txt')
 
   # Write normal logs
-  if not finalLog:
+  if not finalLog and CONFIG['write_battle_logs']:
     with open(filename, 'w') as f:
       for epoch, battle_log, reward_A, reward_B, wins_A, wins_B in batched_logs:
         f.write(f"Epoch {epoch}\n")
@@ -38,15 +38,15 @@ def write_logs(batched_logs, last_epoch, finalLog, finalWins=None):
         f.write('\n')
 
   # write final summary log
-  if finalLog and finalWins:
+  if finalLog and finalWins and CONFIG['write_battle_summary_log']:
     total_wins_A = finalWins.get('A', 0)
     total_wins_B = finalWins.get('B', 0)
     epoch_batch_size = CONFIG['epochs']
 
     # Initialize stats
     total_stats = {
-      'A': {'attack':0,'defend':0,'special':0,'recover':0,'knockouts':0,'stuns':0,'poisoned':0},
-      'B': {'attack':0,'defend':0,'special':0,'recover':0,'knockouts':0,'stuns':0,'poisoned':0},
+      'A': {'attack':0,'defend':0,'poison':0,'stun':0,'recover':0,'knockout':0,'stunned':0,'poisoned':0},
+      'B': {'attack':0,'defend':0,'poison':0,'stun':0,'recover':0,'knockout':0,'stunned':0,'poisoned':0},
     }
 
     # Aggregate stats from all batched logs
@@ -58,26 +58,27 @@ def write_logs(batched_logs, last_epoch, finalLog, finalWins=None):
       for entry in battle_log:
         c = entry['creature']
         action = entry['action']
-        if action in ['attack','defend','recover','special']:
+        if action in ['attack','defend','recover','poison','stun']:
           total_stats[c][action] += 1
         elif action == '*KNOCKOUT*':
-          total_stats[c]['knockouts'] += 1
+          total_stats[c]['knockout'] += 1
         elif action == '*STUNNED*':
-          total_stats[c]['stuns'] += 1
+          total_stats[c]['stunned'] += 1
         elif action == '*POISONED*':
           total_stats[c]['poisoned'] += 1
 
     with open(filenameFinal, 'w') as f:
       for c in ['A','B']:
         f.write(f"---------------------------------------------------------------\n")
-        f.write(f"{c} | Total Wins: {total_wins[c]} | Avg Wins: {total_wins[c]/epoch_batch_size:.2f}\n")
+        f.write(f"{c} | Total Wins: {total_wins[c]} | Avg Wins: {total_wins[c]/epoch_batch_size:.0%}\n")
         f.write(f"---------------------------------------------------------------\n")
         f.write(f"  Attack: {total_stats[c]['attack']}\n")
         f.write(f"  Defend: {total_stats[c]['defend']}\n")
-        f.write(f"  Special: {total_stats[c]['special']}\n")
+        f.write(f"  Poison: {total_stats[c]['poison']}\n")
+        f.write(f"  Stun: {total_stats[c]['stun']}\n")
         f.write(f"  Recover: {total_stats[c]['recover']}\n")
-        f.write(f"  KO: {total_stats[c]['knockouts']}\n")
-        f.write(f"  Stun: {total_stats[c]['stuns']}\n")
+        f.write(f"  KO: {total_stats[c]['knockout']}\n")
+        f.write(f"  Stun: {total_stats[c]['stunned']}\n")
         f.write(f"  Poison: {total_stats[c]['poisoned']}\n\n")
       f.write(f"---------------------------------------------------------------\n")
       f.write(f"Epoch Batch Size: {epoch_batch_size} | Total Epochs: {last_epoch}\n")

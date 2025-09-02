@@ -1,4 +1,4 @@
-app/battle_logs/
-app/checkpoints/
+battle_logs/
+checkpoints/
 venv313/
 .vscode

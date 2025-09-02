@@ -1,6 +1,5 @@
 import numpy as np
-import torch
-from app.config import ACTION_NAMES, CONFIG, DOT_DAMAGE, SPECIAL_ABILITIES
+from app.config import CONFIG, DOT_DAMAGE, SPECIAL_ABILITIES
 from app.modules.logging_utils import append_battle_log
 
 # ------------------ Creature ------------------
@@ -22,12 +21,12 @@ class Creature:
     self.actions = [
       ('attack', self.attack),
       ('defend', self.defend),
-      ('recover', self.recover)
+      ('recover', self.recover),
     ]
 
     # Add each special as a separate action
-    for special_name in self.special_abilities:
-      self.actions.append((special_name, self.use_special))
+    for ability_name in self.special_abilities:
+      self.actions.append((ability_name, self.use_special))
 
   def is_alive(self):
     return self.hp > 0
@@ -38,6 +37,8 @@ class Creature:
         self.hp -= DOT_DAMAGE['poison_damage']
         if self.hp <= 0:
           append_battle_log(epoch, tick, creature, opponent, battle_log, '*POISONED*', zero, -1, 0.0)
+
+      # Handle status decay
       self.statuses[status] -= 1
       if self.statuses[status] <= 0:
         del self.statuses[status]
@@ -62,6 +63,7 @@ class Creature:
       ability['apply'](self, opponent)
       return ability['reward']
     return 0.0
+
 
   def recover(self, opponent=None):
     if self.energy >= self.max_energy:
