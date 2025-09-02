@@ -35,7 +35,12 @@ def simulate_battle(creature_A, creature_B, epoch, batch_size, epsilon):
       # Choose and perform action, assign per-action reward
       action_idx, probs = choose_action(creature.nn, create_state(creature, opponent), epsilon)
       action_name, action_fn = creature.actions[action_idx]
-      reward = action_fn(opponent)
+
+      # If it's a special, pass the action name to use_special
+      if action_name in creature.special_abilities:
+        reward = action_fn(opponent, action_name)
+      else:
+        reward = action_fn(opponent)
       rewards[creature.name] += reward
 
       if opponent.is_alive():

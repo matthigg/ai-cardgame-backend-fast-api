@@ -3,7 +3,7 @@ import numpy as np
 
 # ------------------ Configuration ------------------
 
-ACTION_NAMES = ['Attack', 'Defend', 'Special', 'Recover']
+ACTION_NAMES = ['attack', 'defend', 'special', 'recover']
 
 CONFIG = {
   'seed': 43,
@@ -44,12 +44,12 @@ DOT_DAMAGE = {
 SPECIAL_ABILITIES = {
   'poison': {
     'energy_cost': 30,
-    'apply': lambda c, o: o.statuses.update({'Poison': 3}), 
+    'apply': lambda c, o: o.statuses.update({'poison': 3}), 
     'reward': 0.01
   },
   'stun': {
     'energy_cost': 40,
-    'apply': lambda c, o: o.statuses.update({'Stun': 2}) if 'Defend' not in o.statuses else None,
+    'apply': lambda c, o: o.statuses.update({'stun': 2}) if 'defend' not in o.statuses else None,
     'reward': 0.01
   }
 }
@@ -61,7 +61,7 @@ CREATURES = {
     'energy': 100,
     'max_energy': 100,
     'speed': 10,
-    'special_abilities': ['poison']
+    'special_abilities': ['poison', 'stun']
   },
   'B': {
     'hp': 100,
@@ -69,7 +69,7 @@ CREATURES = {
     'energy': 100,
     'max_energy': 100,
     'speed': 10,
-    'special_abilities': ['poison']
+    'special_abilities': ['poison', 'stun']
   },
 }
 

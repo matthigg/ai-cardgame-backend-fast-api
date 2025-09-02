@@ -1,6 +1,5 @@
 import numpy as np
 import torch
-import torch.nn.functional as F
 from app.config import ACTION_NAMES, CONFIG, DOT_DAMAGE, SPECIAL_ABILITIES
 from app.modules.logging_utils import append_battle_log
 
@@ -19,48 +18,45 @@ class Creature:
     self.statuses = {}
     self.action_rewards = 0.0
 
-    # Available actions: (name, function)
+    # Base actions
     self.actions = [
-      ('Attack', self.attack),
-      ('Defend', self.defend),
-      ('Special', self.use_special),
-      ('Recover', self.recover)
+      ('attack', self.attack),
+      ('defend', self.defend),
+      ('recover', self.recover)
     ]
+
+    # Add each special as a separate action
+    for special_name in self.special_abilities:
+      self.actions.append((special_name, self.use_special))
 
   def is_alive(self):
     return self.hp > 0
-  
+
   def process_statuses(self, epoch, tick, creature, opponent, battle_log, zero):
     for status in list(self.statuses.keys()):
-      if status == 'Poison':
+      if status == 'poison':
         self.hp -= DOT_DAMAGE['poison_damage']
         if self.hp <= 0:
           append_battle_log(epoch, tick, creature, opponent, battle_log, '*POISONED*', zero, -1, 0.0)
-
-      # Handle status decay
       self.statuses[status] -= 1
       if self.statuses[status] <= 0:
         del self.statuses[status]
 
   def attack(self, opponent):
     dmg = CONFIG['attack_damage']
-    if 'Defend' in opponent.statuses:
+    if 'defend' in opponent.statuses:
       dmg = int(np.ceil(dmg / 2))
     opponent.hp -= dmg
     self.energy = min(self.max_energy, self.energy + CONFIG['energy_regen_base'])
     return CONFIG['reward_attack']
 
   def defend(self, opponent=None):
-    self.statuses['Defend'] = 1
+    self.statuses['defend'] = 1
     self.energy = min(self.max_energy, self.energy + CONFIG['energy_regen_base'])
     return CONFIG['reward_defend']
 
-  def use_special(self, opponent):
-    if len(self.special_abilities) == 0:
-      return 0.0
-    
-    ability = SPECIAL_ABILITIES.get(self.special_abilities[0])
-
+  def use_special(self, opponent, ability_name):
+    ability = SPECIAL_ABILITIES.get(ability_name)
     if ability and self.energy >= ability['energy_cost']:
       self.energy -= ability['energy_cost']
       ability['apply'](self, opponent)
