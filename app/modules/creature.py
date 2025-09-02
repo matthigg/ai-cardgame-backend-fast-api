@@ -1,6 +1,6 @@
 import numpy as np
 import torch.optim as optim
-from app.config import CONFIG, DOT_DAMAGE, SPECIAL_ABILITIES
+from app.config import ACTION_NAMES, CONFIG, DOT_DAMAGE, SPECIAL_ABILITIES
 from app.modules.logging_utils import append_battle_log
 from app.modules.network_persistence import load_checkpoint
 from app.modules.neural_network import NeuralNetwork
@@ -77,7 +77,7 @@ class Creature:
 def init_creatures(creature_dict):
   creatures = {}
   optimizers = {}
-  input_size = 4
+  input_size = len(ACTION_NAMES)
   for name, stats in creature_dict.items():
     nn_output_size = 3 + len(stats['special_abilities'])
     nn = NeuralNetwork(input_size, CONFIG['hidden_sizes'], nn_output_size)

@@ -1,4 +1,5 @@
 import os
+import torch
 import torch.optim as optim
 from tqdm import trange
 from app.config import ACTION_NAMES, CONFIG, CREATURES
@@ -7,6 +8,7 @@ from app.modules.battle_simulation import simulate_battle
 from app.modules.logging_utils import write_logs
 from app.modules.neural_network import NeuralNetwork, reinforce_update
 from app.modules.network_persistence import resume_from_checkpoint, save_checkpoints
+from app.modules.utils import create_checkpoint_paths
 
 # ------------------ Training Loop ------------------
 
@@ -18,6 +20,9 @@ def training_loop():
   creature_names = list(creatures.keys())[:2]  # pick first 2 creatures
   creature_A, creature_B = creatures[creature_names[0]], creatures[creature_names[1]]
   optimizer_A, optimizer_B = optimizers[creature_names[0]], optimizers[creature_names[1]]
+
+  
+
 
   resume_from_checkpoint(creature_A, creature_B, optimizer_A, optimizer_B)
 
@@ -51,4 +56,12 @@ def training_loop():
       batched_logs = []
 
   save_checkpoints(creature_A, creature_B, optimizer_A, optimizer_B)
-  write_logs(batched_logs_total, CONFIG['epoch_batch_size'], finalLog=True, finalWins=wins)
+
+  A_path, B_path = create_checkpoint_paths(creature_A, creature_B)
+  checkpoint_A = torch.load(A_path)
+  last_epoch_A = checkpoint_A.get('epoch', 0)
+  checkpoint_B = torch.load(B_path)
+  last_epoch_B = checkpoint_B.get('epoch', 0)
+  last_epochs = {creature_A.name: last_epoch_A, creature_B.name: last_epoch_B}
+  
+  write_logs(batched_logs_total, last_epochs, finalLog=True, final_wins=wins)

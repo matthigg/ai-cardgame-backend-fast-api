@@ -1,6 +1,7 @@
 import os
 import torch
 from app.config import CONFIG, CREATURES
+from app.modules.utils import create_checkpoint_paths
 
 # ------------------ Network Persistence ------------------
 
@@ -17,9 +18,6 @@ def create_checkpoint_file(checkpoint_path, creature, optimizer):
 def save_checkpoint(checkpoint_path, creature, optimizer):
   checkpoint = torch.load(checkpoint_path)
   last_epoch = checkpoint.get('epoch', 0)
-
-  print('last_epoch: ', last_epoch)
-  
   torch.save({
     'epoch': last_epoch + CONFIG['epoch_batch_size'],
     'model_state_dict': creature.nn.state_dict(),
@@ -31,34 +29,22 @@ def load_checkpoint(checkpoint_path, creature, optimizer, config_key=None):
   if not os.path.isfile(checkpoint_path):
     create_checkpoint_file(checkpoint_path, creature, optimizer)
     return 0
-
   checkpoint = torch.load(checkpoint_path)
   creature.nn.load_state_dict(checkpoint['model_state_dict'])
   optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
   last_epoch = checkpoint.get('epoch', 0)
-
   print(f"📂 Resumed {creature.name} from {checkpoint_path} at epoch {last_epoch}")
   return last_epoch
 
 def save_checkpoints(creature_A, creature_B, optimizer_A, optimizer_B):
   A_path, B_path = create_checkpoint_paths(creature_A, creature_B)
-
   save_checkpoint(A_path, creature_A, optimizer_A)
   save_checkpoint(B_path, creature_B, optimizer_B)
 
 def resume_from_checkpoint(creature_A, creature_B, optimizer_A, optimizer_B):
   A_path, B_path = create_checkpoint_paths(creature_A, creature_B)
-
   last_epoch_A = load_checkpoint(A_path, creature_A, optimizer_A)
   last_epoch_B = load_checkpoint(B_path, creature_B, optimizer_B)
-
   print("🔄 Checkpoint summary:")
   print(f"  {creature_A.name} -> {A_path} (next epoch: {last_epoch_A})")
   print(f"  {creature_B.name} -> {B_path} (next epoch: {last_epoch_B})")
-
-def create_checkpoint_paths(creature_A, creature_B):
-  A_id = f"checkpoint_{creature_A.name}_{CREATURES[creature_A.name]['id']}.pt"
-  B_id = f"checkpoint_{creature_B.name}_{CREATURES[creature_B.name]['id']}.pt"
-  A_path = f"{CONFIG['checkpoint_dir']}/{A_id}.pt"
-  B_path = f"{CONFIG['checkpoint_dir']}/{B_id}.pt"
-  return A_path, B_path

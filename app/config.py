@@ -15,7 +15,7 @@ CONFIG = {
   'checkpoint_dir': 'checkpoints',
   'log_dir': 'battle_logs',
 
-  'write_battle_logs': False,
+  'write_battle_logs': True,
   'write_battle_summary_log': True,
 
   'epsilon': 0.9,
