@@ -11,7 +11,8 @@ def create_checkpoint_file(checkpoint_path, creature, optimizer):
   torch.save({
     'epoch': 0,
     'model_state_dict': creature.nn.state_dict(),
-    'optimizer_state_dict': optimizer.state_dict()
+    'optimizer_state_dict': optimizer.state_dict(),
+    'special_abilities': creature.special_abilities  # store current specials
   }, checkpoint_path)
   print(f"✅ Created fresh checkpoint for {creature.name} at epoch 0: {checkpoint_path}")
 
@@ -21,15 +22,24 @@ def save_checkpoint(checkpoint_path, creature, optimizer):
   torch.save({
     'epoch': last_epoch + CONFIG['epoch_batch_size'],
     'model_state_dict': creature.nn.state_dict(),
-    'optimizer_state_dict': optimizer.state_dict()
+    'optimizer_state_dict': optimizer.state_dict(),
+    'special_abilities': creature.special_abilities
   }, checkpoint_path)
   print(f"💾 Saved checkpoint for {creature.name} at epoch {last_epoch}: {checkpoint_path}")
 
-def load_checkpoint(checkpoint_path, creature, optimizer, config_key=None):
+def load_checkpoint(checkpoint_path, creature, optimizer):
   if not os.path.isfile(checkpoint_path):
     create_checkpoint_file(checkpoint_path, creature, optimizer)
     return 0
   checkpoint = torch.load(checkpoint_path)
+
+  # Check if special abilities match
+  saved_specials = checkpoint.get('special_abilities', [])
+  if saved_specials != creature.special_abilities:
+    print(f"⚠️ Special abilities changed for {creature.name}. Resetting checkpoint.")
+    create_checkpoint_file(checkpoint_path, creature, optimizer)
+    return 0
+
   creature.nn.load_state_dict(checkpoint['model_state_dict'])
   optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
   last_epoch = checkpoint.get('epoch', 0)

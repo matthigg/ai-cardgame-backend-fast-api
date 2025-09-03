@@ -76,8 +76,8 @@ CREATURES = {
       'recover': 0.01,
       'win': 10,
       'lose': -10,
-      'poison': 0.05,
-      'stun': 0.02
+      'poison': 0.01,
+      'stun': 0.01
     }
   },
   'B': {
