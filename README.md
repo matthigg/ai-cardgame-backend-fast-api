@@ -120,11 +120,15 @@ fast-api-ai-cardgame/
 │  │  ├─ logging_utils.py       # Log helpers
 │  │  ├─ utils.py               # Misc utilities
 │  │  └─ training_loop.py       # Orchestrates epochs and battle simulations
+│  │
+│  └─ services/
+│     └─ battle.py              # Battle service layer (FastAPI endpoints)
 │
 ├─ checkpoints/                 # Saved neural network checkpoints
 ├─ battle_logs/                 # Generated battle logs
 ├─ requirements.txt
 └─ README.md
+
 ```
 
 ## Notes:
