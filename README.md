@@ -35,7 +35,7 @@ This is a **FastAPI backend** for a turn-based AI battle simulation between two 
 
 ---
 
-## Setup
+# Setup
 
 1. **Clone the repository**
 ```bash
@@ -43,29 +43,29 @@ git clone https://github.com/matthigg/fast-api-ai-cardgame.git
 cd fast-api-ai-cardgame
 ```
 
-Create and activate a virtual environment (recommended)
+2. **Create and activate a virtual environment (recommended)**
 
 ```bash
 python -m venv venv
 ```
 
-# Windows
+## Windows
 ```bash
 venv\Scripts\activate
 ```
 
-# macOS/Linux
+## macOS/Linux
 ```bash
 source venv/bin/activate
 ```
 
-Install dependencies
+3. **Install dependencies**
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Verify installation
+4. **Verify installation**
 
 ```bash
 python -m pip list
@@ -73,7 +73,8 @@ python -m pip list
 
 Ensure fastapi, uvicorn, torch, numpy, and other dependencies are installed.
 
-Running the App
+## Running the App
+
 Start the FastAPI server:
 
 ```bash
@@ -84,7 +85,9 @@ uvicorn app.main:app --reload
 
 Default URL: http://127.0.0.1:8000
 
-API Documentation - FastAPI automatically provides interactive API documentation:
+## API Documentation 
+
+FastAPI automatically provides interactive API documentation:
 
 Swagger UI: http://127.0.0.1:8000/docs
 
@@ -92,7 +95,7 @@ ReDoc: http://127.0.0.1:8000/redoc
 
 You can test all endpoints directly from the Swagger UI, including simulating battles and retrieving logs.
 
-Project Structure
+## Project Structure
 
 fast-api-ai-cardgame/
 │
@@ -113,7 +116,7 @@ fast-api-ai-cardgame/
 ├─ requirements.txt
 └─ README.md
 
-Notes:
+## Notes:
 
 Creature Configs: Modify CREATURES in config.py to adjust HP, energy, speed, special abilities, and reward parameters.
 
