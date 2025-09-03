@@ -35,7 +35,7 @@ This is a **FastAPI backend** for a turn-based AI battle simulation between two 
 
 ---
 
-# Setup
+## Setup
 
 1. **Clone the repository**
 ```bash
@@ -97,6 +97,7 @@ You can test all endpoints directly from the Swagger UI, including simulating ba
 
 ## Project Structure
 
+```
 fast-api-ai-cardgame/
 │
 ├─ app/
@@ -115,6 +116,7 @@ fast-api-ai-cardgame/
 ├─ battle_logs/                 # Generated battle logs
 ├─ requirements.txt
 └─ README.md
+```
 
 ## Notes:
 
