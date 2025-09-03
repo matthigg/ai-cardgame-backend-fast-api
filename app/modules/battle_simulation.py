@@ -36,8 +36,8 @@ def simulate_battle(creature_A, creature_B, epoch, batch_size, epsilons):
         append_battle_log(epoch, tick, creature, opponent, battle_log, '*STUNNED*', zero, -1, 0.0)
         continue
 
-      action_idx, probs = choose_action(creature.nn, create_state(creature, opponent), epsilon)
-      action_name, action_fn = creature.actions[action_idx]
+      action_index, probs = choose_action(creature.nn, create_state(creature, opponent), epsilon)
+      action_name, action_fn = creature.actions[action_index]
 
       if action_name not in ['attack', 'defend', 'recover']:
         reward = action_fn(opponent, action_name)
@@ -52,7 +52,7 @@ def simulate_battle(creature_A, creature_B, epoch, batch_size, epsilons):
         battle_log,
         action_name if opponent.is_alive() else '*KNOCKOUT*',
         probs,
-        action_idx,
+        action_index,
         reward
       )
 
