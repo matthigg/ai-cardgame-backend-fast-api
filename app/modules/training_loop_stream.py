@@ -33,6 +33,9 @@ def training_loop_stream():
 
   batched_logs, batched_logs_total = [], []
 
+  # Send an initial "hello" event so UI updates right away
+  yield f"data: {json.dumps({'status': 'started'})}\n\n"
+
   for epoch in range(CONFIG['epoch_batch_size']):
     # --- decay epsilons ---
     epsilon_A = max(nn_config_A.get('eps_min', CONFIG['eps_min']),
@@ -80,6 +83,8 @@ def training_loop_stream():
       "winner": winner
     }
     yield f"data: {json.dumps(log_data)}\n\n"
+
+  yield f"data: {json.dumps({'status': 'completed'})}\n\n"
 
   # --- save checkpoints ---
   save_checkpoints(creature_A, creature_B, optimizer_A, optimizer_B)
