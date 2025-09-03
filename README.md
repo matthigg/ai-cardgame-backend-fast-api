@@ -38,6 +38,7 @@ This is a **FastAPI backend** for a turn-based AI battle simulation between two 
 ## Setup
 
 1. **Clone the repository**
+
 ```bash
 git clone https://github.com/matthigg/fast-api-ai-cardgame.git
 cd fast-api-ai-cardgame
@@ -49,12 +50,20 @@ cd fast-api-ai-cardgame
 python -m venv venv
 ```
 
+## Gitbash
+
+```bash
+source venv/Scripts/activate
+```
+
 ## Windows
+
 ```bash
 venv\Scripts\activate
 ```
 
 ## macOS/Linux
+
 ```bash
 source venv/bin/activate
 ```
