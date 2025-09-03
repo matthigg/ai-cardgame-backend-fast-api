@@ -44,25 +44,41 @@ DOT_DAMAGE = {
 SPECIAL_ABILITIES = {
   'poison': {
     'energy_cost': 30,
-    'apply': lambda c, o: o.statuses.update({'poison': 3}), 
-    'reward': 0.01
+    'apply': lambda c, o: o.statuses.update({'poison': 3})
   },
   'stun': {
     'energy_cost': 40,
-    'apply': lambda c, o: o.statuses.update({'stun': 2}) if 'defend' not in o.statuses else None,
-    'reward': 0.01
+    'apply': lambda c, o: o.statuses.update({'stun': 2}) if 'defend' not in o.statuses else None
   }
 }
 
 CREATURES = {
-  'C': {
+  'A': {
     'id': 1,
     'hp': 100,
     'max_hp': 100,
     'energy': 100,
     'max_energy': 100,
     'speed': 10,
-    'special_abilities': ['stun', 'poison']
+    'special_abilities': ['stun', 'poison'],
+    'nn_config': {
+      'hidden_sizes': [64, 32, 16],
+      'learning_rate': 0.001,
+      'epsilon': 0.9,
+      'eps_min': 0.05,
+      'eps_decay_rate': 0.99,
+      'alpha_baseline': 0.05,
+      'entropy_beta': 0.001,
+    },
+    'reward_config': {
+      'attack': 0.01,
+      'defend': 0.01,
+      'recover': 0.01,
+      'win': 10,
+      'lose': -10,
+      'poison': 0.05,
+      'stun': 0.02
+    }
   },
   'B': {
     'id': 2,
@@ -71,18 +87,28 @@ CREATURES = {
     'energy': 100,
     'max_energy': 100,
     'speed': 10,
-    'special_abilities': ['stun', 'poison']
-  },
+    'special_abilities': ['stun', 'poison'],
+    'nn_config': {
+      'hidden_sizes': [64, 32, 16],
+      'learning_rate': 0.001,
+      'epsilon': 0.9,
+      'eps_min': 0.05,
+      'eps_decay_rate': 0.99,
+      'alpha_baseline': 0.05,
+      'entropy_beta': 0.001,
+    },
+    'reward_config': {
+      'attack': 0.01,
+      'defend': 0.01,
+      'recover': 0.01,
+      'win': 10,
+      'lose': -10,
+      'poison': 0.01,
+      'stun': 0.01
+    }
+  }
 }
 
 if CONFIG['use_seed']:
   np.random.seed(CONFIG['seed'])
   torch.manual_seed(CONFIG['seed'])
-
-
-
-
-
-
-
-
