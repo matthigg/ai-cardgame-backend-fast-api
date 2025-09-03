@@ -45,19 +45,6 @@ def simulate_battle(creature_A, creature_B, epoch, batch_size, epsilons):
         reward = action_fn(opponent)
 
       rewards[creature.name] += reward
-<<<<<<< HEAD
-
-      if opponent.is_alive():
-        append_battle_log(epoch, tick, creature, opponent, battle_log, action_name, probs, action_idx, reward)
-      else:
-        append_battle_log(epoch, tick, opponent, creature, battle_log, '*KNOCKOUT*', zero, -1, 0.0)
-
-  # Final win/loss rewards using per-creature reward config if available
-  reward_win_A = getattr(creature_A, 'reward_config', {}).get('reward_win', CONFIG['reward_win'])
-  reward_lose_A = getattr(creature_A, 'reward_config', {}).get('reward_lose', CONFIG['reward_lose'])
-  reward_win_B = getattr(creature_B, 'reward_config', {}).get('reward_win', CONFIG['reward_win'])
-  reward_lose_B = getattr(creature_B, 'reward_config', {}).get('reward_lose', CONFIG['reward_lose'])
-=======
       append_battle_log(
         epoch, tick,
         creature if opponent.is_alive() else opponent,
@@ -74,7 +61,6 @@ def simulate_battle(creature_A, creature_B, epoch, batch_size, epsilons):
   reward_lose_A = creature_A.reward_config.get('lose', CONFIG['reward_lose'])
   reward_win_B = creature_B.reward_config.get('win', CONFIG['reward_win'])
   reward_lose_B = creature_B.reward_config.get('lose', CONFIG['reward_lose'])
->>>>>>> feature/special-rewards-per-creature
 
   winner = None
   if creature_A.hp > creature_B.hp:
