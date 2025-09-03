@@ -120,18 +120,22 @@ fast-api-ai-cardgame/
 │  │  ├─ logging_utils.py       # Log helpers
 │  │  ├─ utils.py               # Misc utilities
 │  │  └─ training_loop.py       # Orchestrates epochs and battle simulations
+│  │
+│  └─ services/
+│     └─ battle.py              # Battle service layer (FastAPI endpoints)
 │
 ├─ checkpoints/                 # Saved neural network checkpoints
 ├─ battle_logs/                 # Generated battle logs
 ├─ requirements.txt
 └─ README.md
+
 ```
 
 ## Notes:
 
 Creature Configs: Modify CREATURES in config.py to adjust HP, energy, speed, special abilities, and reward parameters.
 
-Checkpoints: If you add or remove special abilities, delete the corresponding checkpoint files to avoid inconsistencies.
+Checkpoints: When you add or remove special abilities, the affected checkpoint files are automatically deleted and recreated to prevent inconsistencies. Keep in mind that this resets the creature’s neural network weights and biases, so training progress for that creature will be lost.
 
 Seed: By default, the simulation uses a fixed random seed for reproducibility. Disable it in config.py if you want varied outcomes.
 
