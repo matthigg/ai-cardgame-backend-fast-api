@@ -52,27 +52,6 @@ SPECIAL_ABILITIES = {
   }
 }
 
-# CREATURES = {
-#   'A': {
-#     'id': 1,
-#     'hp': 100,
-#     'max_hp': 100,
-#     'energy': 100,
-#     'max_energy': 100,
-#     'speed': 10,
-#     'special_abilities': ['stun', 'poison']
-#   },
-#   'B': {
-#     'id': 2,
-#     'hp': 100,
-#     'max_hp': 100,
-#     'energy': 100,
-#     'max_energy': 100,
-#     'speed': 10,
-#     'special_abilities': ['stun', 'poison']
-#   },
-# }
-
 CREATURES = {
   'A': {
     'id': 1,
