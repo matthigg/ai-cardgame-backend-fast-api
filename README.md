@@ -41,36 +41,50 @@ This is a **FastAPI backend** for a turn-based AI battle simulation between two 
 ```bash
 git clone https://github.com/matthigg/fast-api-ai-cardgame.git
 cd fast-api-ai-cardgame
+```
+
 Create and activate a virtual environment (recommended)
 
+```bash
 python -m venv venv
+```
 
 # Windows
+```bash
 venv\Scripts\activate
+```
 
 # macOS/Linux
+```bash
 source venv/bin/activate
+```
 
 Install dependencies
 
+```bash
 pip install -r requirements.txt
+```
 
 Verify installation
 
+```bash
 python -m pip list
+```
 
 Ensure fastapi, uvicorn, torch, numpy, and other dependencies are installed.
 
 Running the App
 Start the FastAPI server:
 
+```bash
 uvicorn app.main:app --reload
+```
+
 --reload automatically reloads the server on code changes.
 
 Default URL: http://127.0.0.1:8000
 
-API Documentation
-FastAPI automatically provides interactive API documentation:
+API Documentation - FastAPI automatically provides interactive API documentation:
 
 Swagger UI: http://127.0.0.1:8000/docs
 
@@ -99,7 +113,7 @@ fast-api-ai-cardgame/
 ├─ requirements.txt
 └─ README.md
 
-Notes
+Notes:
 
 Creature Configs: Modify CREATURES in config.py to adjust HP, energy, speed, special abilities, and reward parameters.
 
