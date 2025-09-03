@@ -9,6 +9,6 @@ __pycache__/
 battle_logs/
 checkpoints/
 venv313/
-.vscode
+.vscode/
 build/
 dist/
