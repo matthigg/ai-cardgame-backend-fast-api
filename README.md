@@ -135,7 +135,7 @@ fast-api-ai-cardgame/
 
 Creature Configs: Modify CREATURES in config.py to adjust HP, energy, speed, special abilities, and reward parameters.
 
-Checkpoints: If you add or remove special abilities, the corresponding checkpoint files should be automatically deleted to avoid inconsistencies.
+Checkpoints: When you add or remove special abilities, the affected checkpoint files are automatically deleted and recreated to prevent inconsistencies. Keep in mind that this resets the creature’s neural network weights and biases, so training progress for that creature will be lost.
 
 Seed: By default, the simulation uses a fixed random seed for reproducibility. Disable it in config.py if you want varied outcomes.
 
