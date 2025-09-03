@@ -54,15 +54,52 @@ SPECIAL_ABILITIES = {
   }
 }
 
+# CREATURES = {
+#   'A': {
+#     'id': 1,
+#     'hp': 100,
+#     'max_hp': 100,
+#     'energy': 100,
+#     'max_energy': 100,
+#     'speed': 10,
+#     'special_abilities': ['stun', 'poison']
+#   },
+#   'B': {
+#     'id': 2,
+#     'hp': 100,
+#     'max_hp': 100,
+#     'energy': 100,
+#     'max_energy': 100,
+#     'speed': 10,
+#     'special_abilities': ['stun', 'poison']
+#   },
+# }
+
 CREATURES = {
-  'C': {
+  'A': {
     'id': 1,
     'hp': 100,
     'max_hp': 100,
     'energy': 100,
     'max_energy': 100,
     'speed': 10,
-    'special_abilities': ['stun', 'poison']
+    'special_abilities': ['stun', 'poison'],
+    'nn_config': {
+      'hidden_sizes': [64, 32, 16],
+      'learning_rate': 0.001,
+      'epsilon': 0.9,
+      'eps_min': 0.05,
+      'eps_decay_rate': 0.99,
+      'alpha_baseline': 0.05,
+      'entropy_beta': 0.001,
+    },
+    'reward_config': {
+      'attack': 0.01,
+      'defend': 0.01,
+      'recover': 0.01,
+      'win': 10,
+      'lose': -10,
+    }
   },
   'B': {
     'id': 2,
@@ -71,9 +108,26 @@ CREATURES = {
     'energy': 100,
     'max_energy': 100,
     'speed': 10,
-    'special_abilities': ['stun', 'poison']
+    'special_abilities': ['stun', 'poison'],
+    'nn_config': {
+      'hidden_sizes': [64, 32, 16],
+      'learning_rate': 0.001,
+      'epsilon': 0.9,
+      'eps_min': 0.05,
+      'eps_decay_rate': 0.99,
+      'alpha_baseline': 0.05,
+      'entropy_beta': 0.001,
+    },
+    'reward_config': {
+      'attack': 0.01,
+      'defend': 0.01,
+      'recover': 0.01,
+      'win': 10,
+      'lose': -10,
+    }
   },
 }
+
 
 if CONFIG['use_seed']:
   np.random.seed(CONFIG['seed'])

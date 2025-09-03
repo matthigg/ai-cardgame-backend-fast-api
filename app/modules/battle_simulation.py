@@ -5,7 +5,8 @@ from app.modules.utils import choose_action, create_state
 
 # ------------------ Battle Simulation ------------------
 
-def simulate_battle(creature_A, creature_B, epoch, batch_size, epsilon):
+def simulate_battle(creature_A, creature_B, epoch, batch_size, epsilons):
+  epsilon_A, epsilon_B = epsilons  # unpack tuple
   creature_A.hp = creature_A.max_hp
   creature_A.energy = creature_A.max_energy
   creature_B.hp = creature_B.max_hp
@@ -19,6 +20,8 @@ def simulate_battle(creature_A, creature_B, epoch, batch_size, epsilon):
   for tick in range(batch_size):
     for creature in turn_order:
       opponent = creature_B if creature is creature_A else creature_A
+      epsilon = epsilon_A if creature is creature_A else epsilon_B
+
       if not creature.is_alive() or not opponent.is_alive():
         continue
 
@@ -46,18 +49,22 @@ def simulate_battle(creature_A, creature_B, epoch, batch_size, epsilon):
       if opponent.is_alive():
         append_battle_log(epoch, tick, creature, opponent, battle_log, action_name, probs, action_idx, reward)
       else:
-        # Log opponent with *KNOCKOUT* message
         append_battle_log(epoch, tick, opponent, creature, battle_log, '*KNOCKOUT*', zero, -1, 0.0)
 
-  # Final win/loss rewards
+  # Final win/loss rewards using per-creature reward config if available
+  reward_win_A = getattr(creature_A, 'reward_config', {}).get('reward_win', CONFIG['reward_win'])
+  reward_lose_A = getattr(creature_A, 'reward_config', {}).get('reward_lose', CONFIG['reward_lose'])
+  reward_win_B = getattr(creature_B, 'reward_config', {}).get('reward_win', CONFIG['reward_win'])
+  reward_lose_B = getattr(creature_B, 'reward_config', {}).get('reward_lose', CONFIG['reward_lose'])
+
   winner = None
   if creature_A.hp > creature_B.hp:
-    rewards[creature_A.name] += CONFIG['reward_win']
-    rewards[creature_B.name] += CONFIG['reward_lose']
+    rewards[creature_A.name] += reward_win_A
+    rewards[creature_B.name] += reward_lose_B
     winner = creature_A.name
   elif creature_B.hp > creature_A.hp:
-    rewards[creature_B.name] += CONFIG['reward_win']
-    rewards[creature_A.name] += CONFIG['reward_lose']
+    rewards[creature_B.name] += reward_win_B
+    rewards[creature_A.name] += reward_lose_A
     winner = creature_B.name
 
   # Apply final rewards to last entries
