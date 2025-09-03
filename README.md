@@ -50,7 +50,7 @@ cd fast-api-ai-cardgame
 python -m venv venv
 ```
 
-## Gitbash
+## Git Bash
 
 ```bash
 source venv/Scripts/activate
