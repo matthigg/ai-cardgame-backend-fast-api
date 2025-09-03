@@ -44,13 +44,11 @@ DOT_DAMAGE = {
 SPECIAL_ABILITIES = {
   'poison': {
     'energy_cost': 30,
-    'apply': lambda c, o: o.statuses.update({'poison': 3}), 
-    'reward': 0.01
+    'apply': lambda c, o: o.statuses.update({'poison': 3})
   },
   'stun': {
     'energy_cost': 40,
-    'apply': lambda c, o: o.statuses.update({'stun': 2}) if 'defend' not in o.statuses else None,
-    'reward': 0.01
+    'apply': lambda c, o: o.statuses.update({'stun': 2}) if 'defend' not in o.statuses else None
   }
 }
 
@@ -99,6 +97,8 @@ CREATURES = {
       'recover': 0.01,
       'win': 10,
       'lose': -10,
+      'poison': 0.01,
+      'stun': 0.01
     }
   },
   'B': {
@@ -124,19 +124,13 @@ CREATURES = {
       'recover': 0.01,
       'win': 10,
       'lose': -10,
+      'poison': 0.01,
+      'stun': 0.01
     }
-  },
+  }
 }
 
 
 if CONFIG['use_seed']:
   np.random.seed(CONFIG['seed'])
   torch.manual_seed(CONFIG['seed'])
-
-
-
-
-
-
-
-
