@@ -2,5 +2,3 @@ numpy
 torch
 fastapi
 uvicorn
-pydantic
-tdqm
