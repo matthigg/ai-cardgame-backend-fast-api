@@ -75,13 +75,18 @@ def training_loop_stream():
       batched_logs = []
 
     # --- yield live stream event ---
-    log_data = {
-      "epoch": epoch,
-      "reward_A": reward_A,
-      "reward_B": reward_B,
-      "wins": wins,
-      "winner": winner
-    }
+    # log_data = {
+    #   "epoch": epoch,
+    #   "reward_A": reward_A,
+    #   "reward_B": reward_B,
+    #   "wins": wins,
+    #   "winner": winner
+    # }
+
+    log_data = battle_log
+
+    # print(log_data)
+    
     yield f"data: {json.dumps(log_data)}\n\n"
 
   yield f"data: {json.dumps({'status': 'completed'})}\n\n"

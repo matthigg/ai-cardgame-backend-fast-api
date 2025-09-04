@@ -5,7 +5,7 @@ from app.modules.utils import create_state
 # ------------------ Append Battle Log ------------------
 
 def append_battle_log(epoch, tick, creature, opponent, battle_log, action_name, probs, action_idx, reward):
-  battle_log.append({
+  data = {
     'epoch': epoch,
     'tick': tick,
     'creature': creature.name,
@@ -17,7 +17,9 @@ def append_battle_log(epoch, tick, creature, opponent, battle_log, action_name, 
     'energy': creature.energy,
     'statuses': creature.statuses.copy(),
     'reward': reward,
-  })
+  }
+  
+  battle_log.append(data.copy())
 
 # ------------------ Logging ------------------
 
