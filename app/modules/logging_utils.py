@@ -1,3 +1,4 @@
+import json
 import os
 from app.config import CREATURES, CONFIG
 from app.modules.utils import create_state
@@ -42,6 +43,8 @@ def write_logs(batched_logs, last_epochs, finalLog, final_wins=None):
                   f"{str(entry['statuses']):14} {[f'{p:.2f}' for p in entry['probs']]}\n")
         f.write('\n')
 
+  summary_data = None
+
   # Write final summary log
   if finalLog and final_wins and CONFIG['write_battle_summary_log']:
     creature_names = list(final_wins.keys())
@@ -56,8 +59,8 @@ def write_logs(batched_logs, last_epochs, finalLog, final_wins=None):
       } for c in creature_names
     }
 
-    # Count stalemates from winner field
-    for epoch, battle_log, _, _, wins_A, wins_B in batched_logs:
+    # Count actions and outcomes
+    for epoch, battle_log, _, _, _, _ in batched_logs:
       for entry in battle_log:
         c = entry['creature']
         action = entry['action']
@@ -70,9 +73,25 @@ def write_logs(batched_logs, last_epochs, finalLog, final_wins=None):
         elif action == '*POISONED*':
           total_stats[c]['poisoned'] += 1
         elif action == '*STALEMATE*':
-          total_stats[c]['stalemates'] += 1  # <- just counting
+          total_stats[c]['stalemates'] += 1
 
-    # Write final summary
+    summary_data = {
+      c: {
+        "name": c,
+        "totalWins": final_wins[c],
+        "avgWins": final_wins[c] / epoch_batch_size,
+        "totalEpochs": last_epochs[c],
+        "stats": total_stats[c],
+      }
+      for c in creature_names
+    }
+
+    # Write JSON file
+    filenameJson = os.path.join(CONFIG['log_dir'], 'summary.json')
+    with open(filenameJson, 'w') as fjson:
+      json.dump(summary_data, fjson, indent=2)
+
+    # Write final text summary
     with open(filenameFinal, 'w') as f:
       for c in creature_names:
         f.write("---------------------------------------------------------------\n")
@@ -91,3 +110,5 @@ def write_logs(batched_logs, last_epochs, finalLog, final_wins=None):
       f.write("---------------------------------------------------------------\n")
       f.write(f"Epoch Batch Size: {epoch_batch_size} \n")
       f.write("---------------------------------------------------------------\n")
+
+  return summary_data

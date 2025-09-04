@@ -1,12 +1,10 @@
+import json
+import os
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
-from app.config import ACTION_NAMES, CONFIG
-from app.modules.battle_simulation import simulate_battle
-from app.modules.creature import Creature
-from app.modules.neural_network import NeuralNetwork
+from app.config import CONFIG
 from app.modules.training_loop import training_loop
 from app.modules.training_loop_stream import training_loop_stream
-
 
 router = APIRouter()
 
@@ -18,3 +16,11 @@ def train_endpoint():
 @router.get("/training-stream")
 async def training_stream():
   return StreamingResponse(training_loop_stream(), media_type="text/event-stream")
+
+@router.get("/summary")
+def get_summary():
+  filename = os.path.join(CONFIG['log_dir'], 'summary.json')
+  if os.path.exists(filename):
+    with open(filename, 'r') as f:
+      return json.load(f)
+  return {"error": "Summary not available yet"}
