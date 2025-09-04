@@ -36,8 +36,7 @@ def training_loop_stream():
   yield f"data: {json.dumps({'status': 'started'})}\n\n"
 
   for epoch in range(CONFIG['epoch_batch_size']):
-    print('epoch: ', epoch)
-
+    
     # Decay epsilons
     epsilon_A = max(nn_config_A.get('eps_min', CONFIG['eps_min']),
                     epsilon_A * nn_config_A.get('eps_decay_rate', CONFIG['eps_decay_rate']))

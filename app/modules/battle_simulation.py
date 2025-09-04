@@ -13,16 +13,20 @@ def simulate_battle(creature_A, creature_B, epoch, max_ticks, epsilons):
   rewards = {creature_A.name: 0.0, creature_B.name: 0.0}
   zero = torch.zeros(len(ACTION_NAMES))
 
-  def abl_zero_reward(actor, target, message):
+  def abl_zero_reward(creature, opponent, message, trace):
+
+    if message == '*KNOCKOUT*' and creature.hp > 0:
+      print('=== ERROR, KNOCKOUT mismatch: ', creature, 'trace: ', trace)
+    
     """Append zero-reward events like STUNNED, KNOCKOUT, POISONED, or STALEMATE."""
-    append_battle_log(epoch, tick, actor, target, battle_log, message, zero, -1, 0.0)
+    append_battle_log(epoch, tick, creature, opponent, battle_log, message, zero, -1, 0.0)
 
   def check_for_knockouts():
     if not creature_A.is_alive() or not creature_B.is_alive():
-      if creature_A.is_alive():
-        abl_zero_reward(creature_A, creature_B, '*KNOCKOUT*')
-      elif creature_B.is_alive():
-        abl_zero_reward(creature_B, creature_A, '*KNOCKOUT*')
+      if not creature_A.is_alive():
+        abl_zero_reward(creature_A, creature_B, '*KNOCKOUT*', 1)
+      elif not creature_B.is_alive():
+        abl_zero_reward(creature_B, creature_A, '*KNOCKOUT*', 2)
       return finalize_battle(creature_A, creature_B, rewards, battle_log)
 
   for tick in range(max_ticks):
@@ -48,7 +52,7 @@ def simulate_battle(creature_A, creature_B, epoch, max_ticks, epsilons):
         return result
 
       if 'stun' in creature.statuses:
-        abl_zero_reward(creature, opponent, '*STUNNED*')
+        abl_zero_reward(creature, opponent, '*STUNNED*', 3)
         continue
 
       action_index, probs = choose_action(creature.nn, create_state(creature, opponent), epsilon)
@@ -63,7 +67,7 @@ def simulate_battle(creature_A, creature_B, epoch, max_ticks, epsilons):
 
       # If action caused knockout
       if not opponent.is_alive():
-        abl_zero_reward(creature, opponent, '*KNOCKOUT*')
+        abl_zero_reward(opponent, creature, '*KNOCKOUT*', 4)
         return finalize_battle(creature_A, creature_B, rewards, battle_log)
 
       append_battle_log(
@@ -78,8 +82,8 @@ def simulate_battle(creature_A, creature_B, epoch, max_ticks, epsilons):
       )
 
   # Stalemate
-  abl_zero_reward(creature_A, creature_B, '*STALEMATE*')
-  abl_zero_reward(creature_B, creature_A, '*STALEMATE*')
+  abl_zero_reward(creature_A, creature_B, '*STALEMATE*', 5)
+  abl_zero_reward(creature_B, creature_A, '*STALEMATE*', 6)
   return finalize_battle(creature_A, creature_B, rewards, battle_log, stalemate=True)
 
 
