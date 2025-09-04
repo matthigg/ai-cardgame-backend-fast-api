@@ -25,15 +25,21 @@ class Creature:
     for ability_name in self.special_abilities:
       self.actions.append((ability_name, self.use_special))
 
+  def reset(self):
+    self.hp = self.max_hp
+    self.energy = self.max_energy
+    self.statuses = {}
+
   def is_alive(self):
     return self.hp > 0
 
-  def process_statuses(self, epoch, tick, creature, opponent, battle_log, zero):
+  def process_statuses(self, opponent, abl_zero_reward):
+    """Apply DOT effects and call abl_zero_reward if needed."""
     for status in list(self.statuses.keys()):
       if status == 'poison':
         self.hp -= DOT_DAMAGE['poison_damage']
         if self.hp <= 0:
-          append_battle_log(epoch, tick, creature, opponent, battle_log, '*POISONED*', zero, -1, 0.0)
+          abl_zero_reward(self, opponent, '*POISONED*')
       self.statuses[status] -= 1
       if self.statuses[status] <= 0:
         del self.statuses[status]
@@ -64,6 +70,7 @@ class Creature:
       return -self.reward_config.get('recover', CONFIG['reward_recover'])
     self.energy = min(self.max_energy, self.energy + CONFIG['energy_regen_recover'])
     return self.reward_config.get('recover', CONFIG['reward_recover'])
+
 
 def init_creatures(creature_dict):
   creatures = {}

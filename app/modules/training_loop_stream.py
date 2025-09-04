@@ -31,12 +31,16 @@ def training_loop_stream():
   epsilon_B = nn_config_B.get('epsilon', CONFIG['epsilon'])
   wins = {creature_A.name: 0, creature_B.name: 0}
 
+
   batched_logs, batched_logs_total = [], []
 
   # Send an initial "hello" event so UI updates right away
   yield f"data: {json.dumps({'status': 'started'})}\n\n"
 
   for epoch in range(CONFIG['epoch_batch_size']):
+
+    print('epoch: ', epoch)
+    
     # --- decay epsilons ---
     epsilon_A = max(nn_config_A.get('eps_min', CONFIG['eps_min']),
                     epsilon_A * nn_config_A.get('eps_decay_rate', CONFIG['eps_decay_rate']))
@@ -48,7 +52,7 @@ def training_loop_stream():
       creature_A, creature_B, epoch, CONFIG['max_ticks'], (epsilon_A, epsilon_B)
     )
 
-    if winner:
+    if winner and winner != 'stalemate':
       wins[winner] += 1
 
     # --- reinforce updates ---
