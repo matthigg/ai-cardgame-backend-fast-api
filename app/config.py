@@ -8,8 +8,8 @@ ACTION_NAMES = ['attack', 'defend', 'special', 'recover']
 CONFIG = {
   'seed': 43,
   'use_seed': True,
-  'epoch_batch_size': 100,
-  'log_batch_size': 50,
+  'epoch_batch_size': 5,
+  'max_ticks': 50,
 
   'resume_from_checkpoint': True,
   'checkpoint_dir': 'checkpoints',

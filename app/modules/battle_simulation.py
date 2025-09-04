@@ -4,7 +4,7 @@ from app.config import ACTION_NAMES, CONFIG
 from app.modules.logging_utils import append_battle_log
 from app.modules.utils import choose_action, create_state
 
-def simulate_battle(creature_A, creature_B, epoch, batch_size, epsilons):
+def simulate_battle(creature_A, creature_B, epoch, max_ticks, epsilons):
   epsilon_A, epsilon_B = epsilons
   creature_A.hp, creature_A.energy = creature_A.max_hp, creature_A.max_energy
   creature_B.hp, creature_B.energy = creature_B.max_hp, creature_B.max_energy
@@ -12,7 +12,7 @@ def simulate_battle(creature_A, creature_B, epoch, batch_size, epsilons):
   rewards = {creature_A.name: 0.0, creature_B.name: 0.0}
   zero = torch.zeros(len(ACTION_NAMES))
 
-  for tick in range(batch_size):
+  for tick in range(max_ticks):
     # Determine turn order each tick
     creatures = [creature_A, creature_B]
     creatures.sort(key=lambda c: c.speed, reverse=True)

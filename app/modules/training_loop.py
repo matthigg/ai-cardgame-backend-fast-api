@@ -42,7 +42,7 @@ def training_loop():
 
     # Run battle simulation
     reward_A, reward_B, battle_log, winner = simulate_battle(
-      creature_A, creature_B, epoch, CONFIG['log_batch_size'], (epsilon_A, epsilon_B)
+      creature_A, creature_B, epoch, CONFIG['max_ticks'], (epsilon_A, epsilon_B)
     )
 
     if winner:
@@ -59,7 +59,7 @@ def training_loop():
     batched_logs.append((epoch, battle_log, reward_A, reward_B, wins[creature_A.name], wins[creature_B.name]))
     batched_logs_total.append((epoch, battle_log, reward_A, reward_B, wins[creature_A.name], wins[creature_B.name]))
 
-    if len(batched_logs) % CONFIG['log_batch_size'] == 0:
+    if len(batched_logs) % CONFIG['max_ticks'] == 0:
       write_logs(batched_logs, epoch, finalLog=False)
       batched_logs = []
 
