@@ -9,7 +9,7 @@ CONFIG = {
   'seed': 43,
   'use_seed': True,
   'epoch_batch_size': 5,
-  'max_ticks': 3,
+  'max_ticks': 2,
 
   'resume_from_checkpoint': True,
   'checkpoint_dir': 'checkpoints',
@@ -17,6 +17,7 @@ CONFIG = {
 
   'write_battle_logs': True,
   'write_battle_summary_log': True,
+  'sort_logs_by_creature': False,
 
   'epsilon': 0.9,
   'eps_min': 0.05,

@@ -112,5 +112,7 @@ def finalize_battle(creature_A, creature_B, rewards, battle_log, stalemate=False
         entry['reward'] += rewards[creature_B.name]
         break
 
-  battle_log.sort(key=lambda x: (x['creature'], x['epoch'], x['tick']))
+  if CONFIG['sort_logs_by_creature']:
+    battle_log.sort(key=lambda x: (x['creature'], x['epoch'], x['tick']))
+    
   return rewards[creature_A.name], rewards[creature_B.name], battle_log, winner
