@@ -77,7 +77,7 @@ def training_loop_stream():
     # Yield battle log
     yield f"data: {json.dumps(battle_log)}\n\n"
 
-  yield f"data: {json.dumps({'status': 'completed'})}\n\n"
+  # yield f"data: {json.dumps({'status': 'completed'})}\n\n"
 
   # Save checkpoints
   save_checkpoints(creature_A, creature_B, optimizer_A, optimizer_B)
@@ -98,4 +98,5 @@ def training_loop_stream():
     final_wins=wins
   )
 
-  # yield f"data: {json.dumps({'status': 'summary', 'summary': summary_data})}\n\n"
+  yield f"data: {json.dumps({'status': 'summary', 'summary': summary_data})}\n\n"
+  yield f"data: {json.dumps({'status': 'completed'})}\n\n"
