@@ -39,7 +39,7 @@ class Creature:
       if status == 'poison':
         self.hp -= DOT_DAMAGE['poison_damage']
         if self.hp <= 0:
-          abl_zero_reward(self, opponent, '*POISONED*')
+          abl_zero_reward(self, opponent, '*POISONED*', 99)
       self.statuses[status] -= 1
       if self.statuses[status] <= 0:
         del self.statuses[status]

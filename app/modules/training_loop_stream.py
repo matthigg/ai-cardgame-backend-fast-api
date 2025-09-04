@@ -98,4 +98,4 @@ def training_loop_stream():
     final_wins=wins
   )
 
-  yield f"data: {json.dumps({'status': 'summary', 'summary': summary_data})}\n\n"
+  # yield f"data: {json.dumps({'status': 'summary', 'summary': summary_data})}\n\n"
