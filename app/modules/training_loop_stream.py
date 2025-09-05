@@ -1,6 +1,5 @@
 import os
 import torch
-import json
 from app.config import CONFIG, CREATURES
 from app.modules.creature import init_creatures
 from app.modules.battle_simulation import simulate_battle
@@ -9,9 +8,8 @@ from app.modules.neural_network import reinforce_update
 from app.modules.network_persistence import resume_from_checkpoint, save_checkpoints
 from app.modules.utils import create_checkpoint_paths
 
-# ------------------ Training Loop Stream ------------------
-
-def training_loop_stream():
+def training_loop():
+  """Run full training loop and return summary + activations."""
   os.makedirs(CONFIG['log_dir'], exist_ok=True)
   os.makedirs(CONFIG['checkpoint_dir'], exist_ok=True)
 
@@ -32,11 +30,11 @@ def training_loop_stream():
 
   batched_logs, batched_logs_total = [], []
 
-  # Send initial event
-  yield f"data: {json.dumps({'status': 'started'})}\n\n"
+  # Initialize activations history
+  creature_A.activations_history = []
+  creature_B.activations_history = []
 
   for epoch in range(CONFIG['epoch_batch_size']):
-    
     # Decay epsilons
     epsilon_A = max(nn_config_A.get('eps_min', CONFIG['eps_min']),
                     epsilon_A * nn_config_A.get('eps_decay_rate', CONFIG['eps_decay_rate']))
@@ -69,34 +67,34 @@ def training_loop_stream():
     batched_logs_total.append((epoch, battle_log, reward_A, reward_B,
                                wins[creature_A.name], wins[creature_B.name]))
 
+    # Save activations snapshot
+    creature_A.activations_history.append([layer.detach().cpu().tolist() for layer in creature_A.nn.state_dict().values()])
+    creature_B.activations_history.append([layer.detach().cpu().tolist() for layer in creature_B.nn.state_dict().values()])
+
     # Periodic log write
     if len(batched_logs) % CONFIG['max_ticks'] == 0:
       write_logs(batched_logs, {}, finalLog=False)
       batched_logs = []
 
-    # Yield battle log
-    yield f"data: {json.dumps(battle_log)}\n\n"
-
-  # yield f"data: {json.dumps({'status': 'completed'})}\n\n"
-
-  # Save checkpoints
+  # Save checkpoints including activations_history
   save_checkpoints(creature_A, creature_B, optimizer_A, optimizer_B)
-
-  # Final summary
   A_path, B_path = create_checkpoint_paths(creature_A, creature_B)
   checkpoint_A = torch.load(A_path)
+  checkpoint_A['activations_history'] = creature_A.activations_history
+  torch.save(checkpoint_A, A_path)
   checkpoint_B = torch.load(B_path)
-  last_epochs = {
-    creature_A.name: checkpoint_A.get('epoch', 0),
-    creature_B.name: checkpoint_B.get('epoch', 0)
+  checkpoint_B['activations_history'] = creature_B.activations_history
+  torch.save(checkpoint_B, B_path)
+
+  # Final summary logs
+  last_epochs = {creature_A.name: checkpoint_A.get('epoch', 0),
+                 creature_B.name: checkpoint_B.get('epoch', 0)}
+  summary_data = write_logs(batched_logs_total, last_epochs, finalLog=True, final_wins=wins)
+
+  return {
+    "summary": summary_data,
+    "activations": {
+      creature_A.name: creature_A.activations_history,
+      creature_B.name: creature_B.activations_history
+    }
   }
-
-  summary_data = write_logs(
-    batched_logs_total,
-    last_epochs,
-    finalLog=True,
-    final_wins=wins
-  )
-
-  yield f"data: {json.dumps({'status': 'summary', 'summary': summary_data})}\n\n"
-  yield f"data: {json.dumps({'status': 'completed'})}\n\n"
