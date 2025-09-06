@@ -8,7 +8,7 @@ ACTION_NAMES = ['attack', 'defend', 'special', 'recover']
 CONFIG = {
   'seed': 43,
   'use_seed': True,
-  'epoch_batch_size': 20,
+  'epoch_batch_size': 100,
   'max_ticks': 50,
 
   'resume_from_checkpoint': True,
