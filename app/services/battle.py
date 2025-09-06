@@ -57,7 +57,7 @@ def nn_graph(creature_name: str):
   normalized_activations = []
   for epoch_entry in activations_history:
       
-      print('epoch_entry: ', epoch_entry)
+      # print('epoch_entry: ', epoch_entry)
 
       epoch_layers = []
       for layer in epoch_entry['layers']:
