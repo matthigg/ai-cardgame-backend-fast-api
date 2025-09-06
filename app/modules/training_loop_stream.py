@@ -8,6 +8,35 @@ from app.modules.neural_network import reinforce_update
 from app.modules.network_persistence import resume_from_checkpoint, save_checkpoints
 from app.modules.utils import create_checkpoint_paths
 
+def capture_activations(creature, input_tensor):
+  """Return a list of neuron activations (layer outputs), flattened and normalized for visualization."""
+  activations = []
+
+  def forward_hook(module, input, output):
+    if isinstance(output, torch.Tensor):
+      flat = output.detach().cpu().flatten()
+      # Min-max normalization
+      if flat.numel() > 0:
+        min_val = flat.min()
+        max_val = flat.max()
+        normalized = (flat - min_val) / (max_val - min_val + 1e-8)
+        activations.append(normalized.tolist())
+      else:
+        activations.append(flat.tolist())
+
+  hooks = []
+  for module in creature.nn.modules():
+    if isinstance(module, (torch.nn.Linear, torch.nn.ReLU, torch.nn.Tanh, torch.nn.Sigmoid)):
+      hooks.append(module.register_forward_hook(forward_hook))
+
+  # Run the network on the provided input
+  creature.nn(input_tensor)
+
+  for hook in hooks:
+    hook.remove()
+
+  return activations
+
 def training_loop():
   """Run full training loop and return summary + activations."""
   os.makedirs(CONFIG['log_dir'], exist_ok=True)
@@ -30,7 +59,6 @@ def training_loop():
 
   batched_logs, batched_logs_total = [], []
 
-  # Initialize activations history
   creature_A.activations_history = []
   creature_B.activations_history = []
 
@@ -41,8 +69,8 @@ def training_loop():
     epsilon_B = max(nn_config_B.get('eps_min', CONFIG['eps_min']),
                     epsilon_B * nn_config_B.get('eps_decay_rate', CONFIG['eps_decay_rate']))
 
-    # Run battle
-    reward_A, reward_B, battle_log, winner = simulate_battle(
+    # Run battle and get input tensors for activations
+    reward_A, reward_B, battle_log, winner, state_tensor_A, state_tensor_B = simulate_battle(
       creature_A, creature_B, epoch, CONFIG['max_ticks'], (epsilon_A, epsilon_B)
     )
 
@@ -67,9 +95,19 @@ def training_loop():
     batched_logs_total.append((epoch, battle_log, reward_A, reward_B,
                                wins[creature_A.name], wins[creature_B.name]))
 
-    # Save activations snapshot
-    creature_A.activations_history.append([layer.detach().cpu().tolist() for layer in creature_A.nn.state_dict().values()])
-    creature_B.activations_history.append([layer.detach().cpu().tolist() for layer in creature_B.nn.state_dict().values()])
+    # Capture activations for visualization
+    if state_tensor_A is not None:
+      creature_A.activations_history.append({
+        "name": creature_A.name,
+        "epoch": epoch,
+        "layers": capture_activations(creature_A, state_tensor_A)
+      })
+    if state_tensor_B is not None:
+      creature_B.activations_history.append({
+        "name": creature_B.name,
+        "epoch": epoch,
+        "layers": capture_activations(creature_B, state_tensor_B)
+      })
 
     # Periodic log write
     if len(batched_logs) % CONFIG['max_ticks'] == 0:
@@ -86,7 +124,6 @@ def training_loop():
   checkpoint_B['activations_history'] = creature_B.activations_history
   torch.save(checkpoint_B, B_path)
 
-  # Final summary logs
   last_epochs = {creature_A.name: checkpoint_A.get('epoch', 0),
                  creature_B.name: checkpoint_B.get('epoch', 0)}
   summary_data = write_logs(batched_logs_total, last_epochs, finalLog=True, final_wins=wins)

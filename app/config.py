@@ -8,7 +8,7 @@ ACTION_NAMES = ['attack', 'defend', 'special', 'recover']
 CONFIG = {
   'seed': 43,
   'use_seed': True,
-  'epoch_batch_size': 5,
+  'epoch_batch_size': 20,
   'max_ticks': 50,
 
   'resume_from_checkpoint': True,
@@ -25,7 +25,7 @@ CONFIG = {
   'alpha_baseline': 0.05,
   'entropy_beta': 0.001,
   'learning_rate': 0.001,
-  'hidden_sizes': [64, 32, 16],
+  'hidden_sizes': [4, 4],
 
   'attack_damage': 20,
   'energy_regen_base': 10,
@@ -63,13 +63,14 @@ CREATURES = {
     'speed': 10,
     'special_abilities': ['stun', 'poison'],
     'nn_config': {
-      'hidden_sizes': [64, 32, 16],
+      'hidden_sizes': [4, 4],
       'learning_rate': 0.001,
       'epsilon': 0.9,
       'eps_min': 0.05,
       'eps_decay_rate': 0.99,
       'alpha_baseline': 0.05,
       'entropy_beta': 0.001,
+      'max_display_neurons': 5  # NEW
     },
     'reward_config': {
       'attack': 0.01,
@@ -90,13 +91,14 @@ CREATURES = {
     'speed': 10,
     'special_abilities': ['stun', 'poison'],
     'nn_config': {
-      'hidden_sizes': [64, 32, 16],
+      'hidden_sizes': [4, 4],
       'learning_rate': 0.001,
       'epsilon': 0.9,
       'eps_min': 0.05,
       'eps_decay_rate': 0.99,
       'alpha_baseline': 0.05,
       'entropy_beta': 0.001,
+      'max_display_neurons': 8  # NEW
     },
     'reward_config': {
       'attack': 0.01,
@@ -109,6 +111,7 @@ CREATURES = {
     }
   }
 }
+
 
 
 if CONFIG['use_seed']:

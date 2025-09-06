@@ -73,14 +73,44 @@ class Creature:
 
 
 def init_creatures(creature_dict):
+  """
+  Initialize Creature instances and their optimizers.
+  Supports creature-specific nn_config (hidden_sizes, learning_rate, epsilon, etc.)
+  """
   creatures = {}
   optimizers = {}
   input_size = len(ACTION_NAMES)
+
   for name, stats in creature_dict.items():
+    # Creature-specific NN config with fallbacks to global CONFIG
+    nn_conf = stats.get('nn_config', {})
+
+    hidden_sizes = nn_conf.get('hidden_sizes', CONFIG['hidden_sizes'])
+    learning_rate = nn_conf.get('learning_rate', CONFIG['learning_rate'])
+    epsilon = nn_conf.get('epsilon', CONFIG['epsilon'])
+    eps_min = nn_conf.get('eps_min', CONFIG['eps_min'])
+    eps_decay_rate = nn_conf.get('eps_decay_rate', CONFIG['eps_decay_rate'])
+    alpha_baseline = nn_conf.get('alpha_baseline', CONFIG['alpha_baseline'])
+    entropy_beta = nn_conf.get('entropy_beta', CONFIG['entropy_beta'])
+
     nn_output_size = 3 + len(stats['special_abilities'])
-    nn = NeuralNetwork(input_size, CONFIG['hidden_sizes'], nn_output_size)
+    nn = NeuralNetwork(input_size, hidden_sizes, nn_output_size)
+
+    # Store NN config inside creature for later reference if needed
+    stats['nn_config_resolved'] = {
+      'hidden_sizes': hidden_sizes,
+      'learning_rate': learning_rate,
+      'epsilon': epsilon,
+      'eps_min': eps_min,
+      'eps_decay_rate': eps_decay_rate,
+      'alpha_baseline': alpha_baseline,
+      'entropy_beta': entropy_beta,
+    }
+
     creature = Creature(name, nn, stats)
-    optimizer = optim.Adam(nn.parameters(), lr=CONFIG['learning_rate'])
+    optimizer = optim.Adam(nn.parameters(), lr=learning_rate)
+
     creatures[name] = creature
     optimizers[name] = optimizer
+
   return creatures, optimizers

@@ -26,7 +26,8 @@ def get_summary():
 
 @router.get("/nn-graph/{creature_name}")
 def nn_graph(creature_name: str):
-  """Return weights, biases, and activations_history for a creature."""
+  """Return weights, biases, and normalized activations_history for a creature."""
+
   A_path, B_path = create_checkpoint_paths_by_name('A', 'B')
   path_map = {'A': A_path, 'B': B_path}
 
@@ -41,7 +42,10 @@ def nn_graph(creature_name: str):
   state_dict = checkpoint.get('model_state_dict', {})
   activations_history = checkpoint.get('activations_history', [])
 
+  # print('activations_history: ', activations_history)
+
   weights, biases = [], []
+
   for key in sorted(state_dict.keys()):
     tensor = state_dict[key]
     if 'weight' in key:
@@ -49,8 +53,26 @@ def nn_graph(creature_name: str):
     elif 'bias' in key:
       biases.append(tensor.tolist())
 
+  # Normalize activations per layer, respecting the new structure
+  normalized_activations = []
+  for epoch_entry in activations_history:
+    epoch_layers = []
+    for layer in epoch_entry['layers']:
+      flat_layer = []
+      for neuron in layer:
+        if isinstance(neuron, list):
+          flat_layer.extend([float(x) for x in neuron])
+        else:
+          flat_layer.append(float(neuron))
+      epoch_layers.append(flat_layer)
+    normalized_activations.append({
+      "name": epoch_entry['name'],
+      "epoch": epoch_entry['epoch'],
+      "layers": epoch_layers
+    })
+
   return {
     "weights": weights,
     "biases": biases,
-    "activations_history": activations_history
+    "activations_history": normalized_activations
   }
