@@ -72,6 +72,7 @@ def nn_graph(creature_name: str):
 
 
   return {
+    "name": creature_name,
     "weights": weights,
     "biases": biases,
     "activations_history": normalized_activations

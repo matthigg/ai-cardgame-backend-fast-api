@@ -63,14 +63,14 @@ CREATURES = {
     'speed': 10,
     'special_abilities': ['stun', 'poison'],
     'nn_config': {
-      'hidden_sizes': [4, 4],
+      'hidden_sizes': [4, 4, 10, 3],
       'learning_rate': 0.001,
       'epsilon': 0.9,
       'eps_min': 0.05,
       'eps_decay_rate': 0.99,
       'alpha_baseline': 0.05,
       'entropy_beta': 0.001,
-      'max_display_neurons': 5  # NEW
+      'max_display_neurons': 5
     },
     'reward_config': {
       'attack': 0.01,
@@ -98,7 +98,7 @@ CREATURES = {
       'eps_decay_rate': 0.99,
       'alpha_baseline': 0.05,
       'entropy_beta': 0.001,
-      'max_display_neurons': 8  # NEW
+      'max_display_neurons': 5
     },
     'reward_config': {
       'attack': 0.01,
