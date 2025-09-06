@@ -9,13 +9,12 @@ from app.modules.network_persistence import resume_from_checkpoint, save_checkpo
 from app.modules.utils import create_checkpoint_paths
 
 def capture_activations(creature, input_tensor):
-  """Return a list of neuron activations (layer outputs), flattened and normalized for visualization."""
+  """Return a list of neuron activations (layer outputs) for visualization."""
   activations = []
 
   def forward_hook(module, input, output):
     if isinstance(output, torch.Tensor):
       flat = output.detach().cpu().flatten()
-      # Min-max normalization
       if flat.numel() > 0:
         min_val = flat.min()
         max_val = flat.max()
@@ -26,7 +25,8 @@ def capture_activations(creature, input_tensor):
 
   hooks = []
   for module in creature.nn.modules():
-    if isinstance(module, (torch.nn.Linear, torch.nn.ReLU, torch.nn.Tanh, torch.nn.Sigmoid)):
+    # Hook only Linear layers to avoid duplicates from activations
+    if isinstance(module, torch.nn.Linear):
       hooks.append(module.register_forward_hook(forward_hook))
 
   # Run the network on the provided input

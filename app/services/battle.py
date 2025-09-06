@@ -56,20 +56,20 @@ def nn_graph(creature_name: str):
   # Normalize activations per layer, respecting the new structure
   normalized_activations = []
   for epoch_entry in activations_history:
-    epoch_layers = []
-    for layer in epoch_entry['layers']:
-      flat_layer = []
-      for neuron in layer:
-        if isinstance(neuron, list):
-          flat_layer.extend([float(x) for x in neuron])
-        else:
-          flat_layer.append(float(neuron))
-      epoch_layers.append(flat_layer)
-    normalized_activations.append({
-      "name": epoch_entry['name'],
-      "epoch": epoch_entry['epoch'],
-      "layers": epoch_layers
-    })
+      
+      print('epoch_entry: ', epoch_entry)
+
+      epoch_layers = []
+      for layer in epoch_entry['layers']:
+          # Ensure each neuron is a float (ignore extra display neurons)
+          flat_layer = [float(neuron) for neuron in layer if isinstance(neuron, (int, float))]
+          epoch_layers.append(flat_layer)
+      normalized_activations.append({
+          "name": epoch_entry['name'],
+          "epoch": epoch_entry['epoch'],
+          "layers": epoch_layers
+      })
+
 
   return {
     "weights": weights,
