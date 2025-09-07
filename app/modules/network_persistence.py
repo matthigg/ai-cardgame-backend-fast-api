@@ -1,6 +1,6 @@
 import os
 import torch
-from app.config import CONFIG, CREATURES
+from app.config import CONFIG
 from app.modules.utils import create_checkpoint_paths
 
 # ------------------ Network Persistence ------------------

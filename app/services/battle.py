@@ -3,8 +3,8 @@ import os
 import torch
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
-from app.config import CONFIG, CREATURES
-from app.modules.training_loop_stream import training_loop  # <- updated synchronous version
+from app.config import CONFIG
+from app.modules.training_loop import training_loop  # <- updated synchronous version
 from app.modules.utils import create_checkpoint_paths_by_name
 
 router = APIRouter()

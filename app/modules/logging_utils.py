@@ -1,6 +1,6 @@
 import json
 import os
-from app.config import CREATURES, CONFIG
+from app.config import CONFIG
 from app.modules.utils import create_state
 
 # ------------------ Append Battle Log ------------------

@@ -53,7 +53,7 @@ SPECIAL_ABILITIES = {
   }
 }
 
-CREATURES = {
+CREATURE_TEMPLATES = {
   'A': {
     'id': 1,
     'hp': 100,
@@ -61,9 +61,9 @@ CREATURES = {
     'energy': 100,
     'max_energy': 100,
     'speed': 10,
-    'special_abilities': ['stun', 'poison'],
+    'special_abilities': ['stun'],
     'nn_config': {
-      'hidden_sizes': [4, 4, 10, 3],
+      'hidden_sizes': [4, 4, 20, 3],
       'learning_rate': 0.001,
       'epsilon': 0.9,
       'eps_min': 0.05,

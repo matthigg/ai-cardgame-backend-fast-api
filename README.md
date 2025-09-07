@@ -133,7 +133,7 @@ fast-api-ai-cardgame/
 
 ## Notes:
 
-Creature Configs: Modify CREATURES in config.py to adjust HP, energy, speed, special abilities, and reward parameters.
+Creature Configs: Modify CREATURE_TEMPLATES in config.py to adjust HP, energy, speed, special abilities, and reward parameters.
 
 Checkpoints: When you add or remove special abilities, the affected checkpoint files are automatically deleted and recreated to prevent inconsistencies. Keep in mind that this resets the creature’s neural network weights and biases, so training progress for that creature will be lost.
 
