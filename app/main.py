@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.services import battle
+from app.services import battle_routes
 import os
 
 app = FastAPI()
@@ -27,4 +27,4 @@ app.add_middleware(
 )
 
 # Include your routes
-app.include_router(battle.router, prefix="/battle", tags=["Battle"])
+app.include_router(battle_routes.router, prefix="/battle", tags=["Battle"])
