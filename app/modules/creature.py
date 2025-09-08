@@ -1,6 +1,6 @@
 import numpy as np
 import torch.optim as optim
-from app.config import ACTION_NAMES, CONFIG, DOT_DAMAGE, SPECIAL_ABILITIES
+from app.config import ACTION_NAMES, CONFIG, CREATURE_TEMPLATES, DOT_DAMAGE, SPECIAL_ABILITIES
 from app.modules.logging_utils import append_battle_log
 from app.modules.neural_network import NeuralNetwork
 
@@ -114,3 +114,22 @@ def init_creatures(creature_dict):
     optimizers[name] = optimizer
 
   return creatures, optimizers
+
+import itertools
+import copy
+
+# global unique ID counter
+_creature_id_counter = itertools.count(1)
+
+def create_creature(template_key, owner):
+    template = CREATURE_TEMPLATES[template_key]
+    creature_id = next(_creature_id_counter)
+
+    # deep copy so instances don’t share mutable state
+    creature = copy.deepcopy(template)
+    creature.update({
+        'id': creature_id,
+        'owner': owner,
+        'statuses': {},   # runtime-only state
+    })
+    return creature

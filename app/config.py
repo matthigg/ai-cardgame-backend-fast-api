@@ -112,6 +112,16 @@ CREATURE_TEMPLATES = {
   }
 }
 
+PLAYER_TEMPLATES = {
+  "Alice": {
+    "name": "Alice",
+    "creatures": ["A"]  # list of creature template keys
+  },
+  "Bob": {
+    "name": "Bob",
+    "creatures": ["B"]
+  }
+}
 
 
 if CONFIG['use_seed']:
