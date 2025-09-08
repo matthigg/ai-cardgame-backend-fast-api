@@ -1,7 +1,7 @@
 import os
 import torch
 from app.config import CONFIG, CREATURE_TEMPLATES
-from app.modules.creature import init_creatures
+from app.modules.creature_manager import init_creatures
 from app.modules.battle_simulation import simulate_battle
 from app.modules.logging_utils import write_logs
 from app.modules.neural_network import reinforce_update
