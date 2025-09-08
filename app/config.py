@@ -55,6 +55,7 @@ SPECIAL_ABILITIES = {
 
 CREATURE_TEMPLATES = {
   'A': {
+    'name': 'A',
     'id': 1,
     'hp': 100,
     'max_hp': 100,
@@ -83,6 +84,7 @@ CREATURE_TEMPLATES = {
     }
   },
   'B': {
+    'name': 'B',
     'id': 2,
     'hp': 100,
     'max_hp': 100,

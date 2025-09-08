@@ -3,6 +3,7 @@ import os
 import json
 import itertools
 import copy
+import numpy as np
 import torch
 import torch.optim as optim
 from app.config import ACTION_NAMES, CONFIG, CREATURE_TEMPLATES, DOT_DAMAGE, SPECIAL_ABILITIES
