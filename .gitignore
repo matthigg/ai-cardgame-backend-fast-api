@@ -8,6 +8,7 @@ __pycache__/
 
 battle_logs/
 checkpoints/
+players/
 venv313/
 venv/
 .vscode/

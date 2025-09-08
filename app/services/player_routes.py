@@ -4,7 +4,7 @@ from app.modules.player_manager import add_active_player, remove_active_player, 
 
 router = APIRouter()
 
-@router.post("/player/login")
+@router.post("/login")
 def login_player(name: str, player_id: int):
   """
   Log in or create a player.
@@ -18,11 +18,11 @@ def login_player(name: str, player_id: int):
     "player": player.to_dict()
   }
 
-@router.post("/player/logout")
+@router.post("/logout")
 def logout_player(name: str, player_id: int):
   remove_active_player(name, player_id)
   return {"message": f"Player {name} ({player_id}) logged out"}
 
-@router.get("/player/active")
+@router.get("/active")
 def active_players():
   return {"active_players": list_active_players()}
