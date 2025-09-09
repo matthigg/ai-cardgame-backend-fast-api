@@ -12,8 +12,20 @@ _active_players: Dict[str, Player] = {}
 def _make_key(name: str, pid: int) -> str:
   return f"{name}_{pid}"
 
-def get_active_player(name: str, pid: int) -> Player | None:
+def get_active_player(name: str, pid: int | None = None) -> Player | None:
+
+  print('name: ', name)
+  print('pid: ', pid)
+  print('_active_players: ', _active_players)
+  
+  if pid is None:
+    # fallback: return first matching active player
+    for key, player in _active_players.items():
+      if player.name == name:
+        return player
+    return None
   return _active_players.get(_make_key(name, pid))
+
 
 def add_active_player(name: str, pid: int, players_dir="players") -> Player | None:
   key = _make_key(name, pid)
