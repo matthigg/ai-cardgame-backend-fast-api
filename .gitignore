@@ -15,3 +15,5 @@ venv/
 .vscode/
 build/
 dist/
+
+inspect_report.json
