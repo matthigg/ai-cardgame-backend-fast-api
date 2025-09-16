@@ -38,11 +38,8 @@ class Creature:
     self.special_abilities = config_stats.get('special_abilities', [])
     self.reward_config = config_stats.get('reward_config', {})
 
-    # Track NN activations for visualization
-    self.activations_history: list[dict] = []
-
     # Runtime state
-    self.statuses: dict[str, int] = {}
+    self.statuses = {}
     self.runtime_state = {
       "hp": self.hp,
       "energy": self.energy,
@@ -60,7 +57,6 @@ class Creature:
     ]
     for ability_name in self.special_abilities:
       self.actions.append((ability_name, self.use_special))
-
 
   def reset(self):
     self.hp = self.max_hp
