@@ -183,16 +183,15 @@ def list_active_creatures():
   return list(_active_creatures.keys())
 
 def create_creature(template_key, owner, creature_id=None):
-    template = CREATURE_TEMPLATES[template_key]
-    nn_output_size = 3 + len(template.get('special_abilities', []))
-    nn_model = NeuralNetwork(
-        len(ACTION_NAMES),
-        template.get('nn_config', {}).get('hidden_sizes', CONFIG['hidden_sizes']),
-        nn_output_size
-    )
-    # Assign a unique ID if not provided
-    creature_id = creature_id or next(_creature_id_counter)
-    creature = Creature(template['name'], owner, nn_model, template, creature_id=creature_id)
-    save_creature(creature)
-    return creature
-
+  template = CREATURE_TEMPLATES[template_key]
+  nn_output_size = 3 + len(template.get('special_abilities', []))
+  nn_model = NeuralNetwork(
+      len(ACTION_NAMES),
+      template.get('nn_config', {}).get('hidden_sizes', []),
+      nn_output_size
+  )
+  # Assign a unique ID if not provided
+  creature_id = creature_id or next(_creature_id_counter)
+  creature = Creature(template['name'], owner, nn_model, template, creature_id=creature_id)
+  save_creature(creature)
+  return creature

@@ -2,7 +2,7 @@ import os
 import copy
 import torch
 from app.config import CONFIG, PLAYER_TEMPLATES, CREATURE_TEMPLATES
-from app.modules.creature_manager import Creature, save_creature
+from app.modules.creature_manager import Creature, save_creature, create_creature
 from app.modules.battle_simulation import simulate_battle
 from app.modules.logging_utils import write_logs
 from app.modules.neural_network import reinforce_update, NeuralNetwork
@@ -41,38 +41,16 @@ def training_loop():
   os.makedirs(CONFIG['checkpoint_dir'], exist_ok=True)
 
   # --- Hardcode Alice and Bob's creatures ---
-  alice_data = PLAYER_TEMPLATES[1]['creatures'][0]
-  bob_data   = PLAYER_TEMPLATES[2]['creatures'][0]
+  alice_creature_data = PLAYER_TEMPLATES[1]['creatures'][0]
+  bob_creature_data   = PLAYER_TEMPLATES[2]['creatures'][0]
 
-  # Create creature instances
+  # Create creature instances using helper
+  creature_A = create_creature('A', 'Alice', creature_id=alice_creature_data['id'])
+  creature_B = create_creature('B', 'Bob', creature_id=bob_creature_data['id'])
+
+  # Get creature templates
   template_A = CREATURE_TEMPLATES['A']
   template_B = CREATURE_TEMPLATES['B']
-
-  nn_A = NeuralNetwork(
-    input_size=4,
-    hidden_sizes=template_A['nn_config']['hidden_sizes'],
-    output_size=3 + len(template_A.get('special_abilities', []))
-  )
-  nn_B = NeuralNetwork(
-    input_size=4,
-    hidden_sizes=template_B['nn_config']['hidden_sizes'],
-    output_size=3 + len(template_B.get('special_abilities', []))
-  )
-
-  creature_A = Creature(
-    name='A',
-    owner='Alice',
-    nn_model=nn_A,
-    config_stats=template_A,
-    creature_id=alice_data['id']
-  )
-  creature_B = Creature(
-    name='B',
-    owner='Bob',
-    nn_model=nn_B,
-    config_stats=template_B,
-    creature_id=bob_data['id']
-  )
 
   save_creature(creature_A)
   save_creature(creature_B)

@@ -3,9 +3,10 @@ import os
 import torch
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
-from app.config import CONFIG
+from app.config import CONFIG, PLAYER_TEMPLATES
 from app.modules.training_loop import training_loop  # <- updated synchronous version
 from app.modules.utils import create_checkpoint_path
+from app.modules.creature_manager import create_creature
 
 router = APIRouter()
 
@@ -28,8 +29,16 @@ def get_summary():
 def nn_graph(creature_name: str):
   """Return weights, biases, and normalized activations_history for a creature."""
 
-  A_path = create_checkpoint_path({ 'name': 'A', id: 101 })
-  B_path = create_checkpoint_path({ 'name': 'B', id: 102 })
+  # --- Hardcode Alice and Bob's creatures ---
+  alice_creature_data = PLAYER_TEMPLATES[1]['creatures'][0]
+  bob_creature_data   = PLAYER_TEMPLATES[2]['creatures'][0]
+
+  # Create creature instances using helper
+  creature_A = create_creature('A', 'Alice', creature_id=alice_creature_data['id'])
+  creature_B = create_creature('B', 'Bob', creature_id=bob_creature_data['id'])
+
+  A_path = create_checkpoint_path(creature_A)
+  B_path = create_checkpoint_path(creature_B)
   path_map = {'A': A_path, 'B': B_path}
 
   if creature_name not in path_map:

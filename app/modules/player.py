@@ -1,7 +1,7 @@
 # app/modules/player.py
 import copy
 import itertools
-from app.modules.creature_manager import create_creature, init_creatures
+from app.modules.creature_manager import init_creatures
 
 # global unique player id counter
 _player_id_counter = itertools.count(1)
