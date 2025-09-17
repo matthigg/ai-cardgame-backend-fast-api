@@ -19,14 +19,6 @@ CONFIG = {
   'write_battle_summary_log': True,
   'sort_logs_by_creature': False,
 
-  # 'epsilon': 0.9,
-  # 'eps_min': 0.05,
-  # 'eps_decay_rate': 0.99,
-  # 'alpha_baseline': 0.05,
-  # 'entropy_beta': 0.001,
-  # 'learning_rate': 0.001,
-  # 'hidden_sizes': [4, 4],
-
   'attack_damage': 20,
   'energy_regen_base': 10,
   'energy_regen_recover': 60,
@@ -53,6 +45,27 @@ SPECIAL_ABILITIES = {
   }
 }
 
+CREATURE_NN_CONFIG = {
+  'hidden_sizes': [4, 4, 20, 3],
+  'learning_rate': 0.001,
+  'epsilon': 0.9,
+  'eps_min': 0.05,
+  'eps_decay_rate': 0.99,
+  'alpha_baseline': 0.05,
+  'entropy_beta': 0.001,
+  'max_display_neurons': 5
+}
+
+CREATURE_REWARD_CONFIG = {
+  'attack': 0.01,
+  'defend': 0.01,
+  'recover': 0.01,
+  'win': 10,
+  'lose': -10,
+  'poison': 0.01,
+  'stun': 0.01
+}
+
 CREATURE_TEMPLATES = {
   'A': {
     'name': 'A',
@@ -63,25 +76,8 @@ CREATURE_TEMPLATES = {
     'max_energy': 100,
     'speed': 10,
     'special_abilities': ['stun'],
-    'nn_config': {
-      'hidden_sizes': [4, 4, 20, 3],
-      'learning_rate': 0.001,
-      'epsilon': 0.9,
-      'eps_min': 0.05,
-      'eps_decay_rate': 0.99,
-      'alpha_baseline': 0.05,
-      'entropy_beta': 0.001,
-      'max_display_neurons': 5
-    },
-    'reward_config': {
-      'attack': 0.01,
-      'defend': 0.01,
-      'recover': 0.01,
-      'win': 10,
-      'lose': -10,
-      'poison': 0.01,
-      'stun': 0.01
-    }
+    'nn_config': CREATURE_NN_CONFIG,
+    'reward_config': CREATURE_REWARD_CONFIG,
   },
   'B': {
     'name': 'B',
@@ -91,26 +87,9 @@ CREATURE_TEMPLATES = {
     'energy': 100,
     'max_energy': 100,
     'speed': 10,
-    'special_abilities': ['stun', 'poison'],
-    'nn_config': {
-      'hidden_sizes': [4, 4],
-      'learning_rate': 0.001,
-      'epsilon': 0.9,
-      'eps_min': 0.05,
-      'eps_decay_rate': 0.99,
-      'alpha_baseline': 0.05,
-      'entropy_beta': 0.001,
-      'max_display_neurons': 5
-    },
-    'reward_config': {
-      'attack': 0.01,
-      'defend': 0.01,
-      'recover': 0.01,
-      'win': 10,
-      'lose': -10,
-      'poison': 0.01,
-      'stun': 0.01
-    }
+    'special_abilities': ['poison'],
+    'nn_config': CREATURE_NN_CONFIG,
+    'reward_config': CREATURE_REWARD_CONFIG,
   }
 }
 
@@ -119,14 +98,14 @@ PLAYER_TEMPLATES = {
     "id": 1,
     "name": "Alice",
     "creatures": [
-      {"template": "A", "id": 101}  # Creature ID
+      { "template": "A", "id": 101 }  # Creature ID
     ]
   },
   2: {
     "id": 2,
     "name": "Bob",
     "creatures": [
-      {"template": "B", "id": 102}
+      { "template": "B", "id": 102 }
     ]
   }
 }
