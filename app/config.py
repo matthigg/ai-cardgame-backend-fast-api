@@ -22,12 +22,6 @@ CONFIG = {
   'attack_damage': 20,
   'energy_regen_base': 10,
   'energy_regen_recover': 60,
-
-  'reward_attack': 0.01,
-  'reward_defend': 0.01,
-  'reward_recover': 0.01,
-  'reward_win': 10,
-  'reward_lose': -10
 }
 
 DOT_DAMAGE = {

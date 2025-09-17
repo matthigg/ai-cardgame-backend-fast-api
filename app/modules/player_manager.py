@@ -2,7 +2,6 @@
 import os
 from typing import Dict
 from app.modules.player import Player, load_player, save_player
-from app.modules.creature_manager import init_creatures, load_creature, add_active_creature, create_creature
 from app.config import CREATURE_TEMPLATES, PLAYER_TEMPLATES
 
 # Active player registry

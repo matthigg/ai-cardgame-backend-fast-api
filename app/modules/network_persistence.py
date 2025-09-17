@@ -1,7 +1,7 @@
 import os
 import torch
 from app.config import CONFIG
-from app.modules.creature_manager import Creature, save_creature
+from app.modules.creature_manager import Creature
 from app.modules.utils import create_checkpoint_path
 
 def save_checkpoints(creature_A: Creature, creature_B: Creature, optimizer_A, optimizer_B):

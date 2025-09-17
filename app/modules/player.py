@@ -1,7 +1,6 @@
 # app/modules/player.py
 import copy
 import itertools
-from app.modules.creature_manager import init_creatures
 
 # global unique player id counter
 _player_id_counter = itertools.count(1)
@@ -38,7 +37,6 @@ class Player:
 import os
 import json
 from app.config import PLAYER_TEMPLATES, CREATURE_TEMPLATES, CONFIG
-from app.modules.creature_manager import init_creatures
 
 def init_players(player_templates=PLAYER_TEMPLATES, creature_templates=CREATURE_TEMPLATES):
   creatures, optimizers = init_creatures(creature_templates)

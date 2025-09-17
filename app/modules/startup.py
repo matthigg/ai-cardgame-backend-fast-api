@@ -4,7 +4,7 @@ import os
 import json
 import torch
 from app.config import CONFIG, PLAYER_TEMPLATES, CREATURE_TEMPLATES, ACTION_NAMES
-from app.modules.creature_manager import create_creature
+# from app.modules.creature_manager import create_creature
 
 PLAYERS_DIR = "players"
 

@@ -2,7 +2,7 @@ import os
 import copy
 import torch
 from app.config import CONFIG, PLAYER_TEMPLATES, CREATURE_TEMPLATES
-from app.modules.creature_manager import Creature, save_creature, create_creature
+from app.modules.creature_manager import Creature
 from app.modules.battle_simulation import simulate_battle
 from app.modules.logging_utils import write_logs
 from app.modules.neural_network import reinforce_update, NeuralNetwork
@@ -52,8 +52,8 @@ def training_loop():
   template_A = CREATURE_TEMPLATES['A']
   template_B = CREATURE_TEMPLATES['B']
 
-  save_creature(creature_A)
-  save_creature(creature_B)
+  # save_creature(creature_A)
+  # save_creature(creature_B)
 
   optimizer_A = torch.optim.Adam(
     creature_A.nn.parameters(),

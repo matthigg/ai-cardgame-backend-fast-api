@@ -1,30 +1,12 @@
 # app/modules/creature_manager.py
-import os
-import json
-import itertools
-import copy
 import numpy as np
 import torch
-import torch.optim as optim
-from app.config import ACTION_NAMES, CONFIG, CREATURE_TEMPLATES, DOT_DAMAGE, SPECIAL_ABILITIES
+from app.config import ACTION_NAMES, CONFIG, DOT_DAMAGE, SPECIAL_ABILITIES
 from app.modules.neural_network import NeuralNetwork
 
-CREATURE_DIR = "creatures"
-os.makedirs(CREATURE_DIR, exist_ok=True)
-
-# Active creature registry (for creatures currently in memory)
-# Key: "id_name"
-_active_creatures: dict[str, 'Creature'] = {}
-
-# global unique ID counter
-_creature_id_counter = itertools.count(1)
-
-def _make_key(creature_id: int, name: str) -> str:
-  return f"{creature_id}_{name}"
-
 class Creature:
-  def __init__(self, name, owner, nn_model, config_stats, creature_id=None):
-    self.id = creature_id or next(_creature_id_counter)
+  def __init__(self, name, owner, nn_model, config_stats, creature_id):
+    self.id = creature_id
     self.name = name
     self.owner = owner
     self.nn = nn_model
@@ -112,6 +94,7 @@ class Creature:
     return self.reward_config.get('recover', CONFIG['reward_recover'])
 
   def to_dict(self):
+    """Serialize creature for storing in player.json (checkpoint path stored separately)."""
     return {
       "id": self.id,
       "name": self.name,
@@ -129,69 +112,19 @@ class Creature:
 
   @classmethod
   def from_dict(cls, data, nn_model):
-    creature = cls(
+    """Instantiate Creature from player.json data + loaded NN."""
+    return cls(
       name=data['name'],
       owner=data['owner'],
       nn_model=nn_model,
       config_stats=data,
       creature_id=data['id']
     )
-    return creature
 
-def init_creatures(creature_dict):
-  creatures = {}
-  optimizers = {}
+def build_nn_for_creature(config_stats):
+  """Helper to create a NeuralNetwork for a creature based on its config."""
   input_size = len(ACTION_NAMES)
-
-  for name, stats in creature_dict.items():
-    nn_output_size = 3 + len(stats.get('special_abilities', []))
-    nn = NeuralNetwork(input_size, stats.get('nn_config', {}).get('hidden_sizes', CONFIG['hidden_sizes']), nn_output_size)
-    optimizer = optim.Adam(nn.parameters(), lr=stats.get('nn_config', {}).get('learning_rate', CONFIG['learning_rate']))
-    creature = Creature(name, owner="SYSTEM", nn_model=nn, config_stats=stats)
-    creatures[name] = creature
-    optimizers[name] = optimizer
-  return creatures, optimizers
-
-def save_creature(creature: Creature):
-  os.makedirs(CREATURE_DIR, exist_ok=True)
-  path = os.path.join(CREATURE_DIR, f"creature_{creature.id}_{creature.name}.json")
-  with open(path, "w") as f:
-    json.dump(creature.to_dict(), f, indent=2)
-  _active_creatures[_make_key(creature.id, creature.name)] = creature
-  return path
-
-def load_creature(creature_id, name, nn_model):
-  path = os.path.join(CREATURE_DIR, f"creature_{creature_id}_{name}.json")
-  if not os.path.exists(path):
-    return None
-  with open(path, "r") as f:
-    data = json.load(f)
-  creature = Creature.from_dict(data, nn_model)
-  _active_creatures[_make_key(creature.id, creature.name)] = creature
-  return creature
-
-def add_active_creature(creature: Creature):
-  key = _make_key(creature.id, creature.name)
-  _active_creatures[key] = creature
-  return creature
-
-def remove_active_creature(creature_id, name):
-  key = _make_key(creature_id, name)
-  _active_creatures.pop(key, None)
-
-def list_active_creatures():
-  return list(_active_creatures.keys())
-
-def create_creature(template_key, owner, creature_id=None):
-  template = CREATURE_TEMPLATES[template_key]
-  nn_output_size = 3 + len(template.get('special_abilities', []))
-  nn_model = NeuralNetwork(
-      len(ACTION_NAMES),
-      template.get('nn_config', {}).get('hidden_sizes', []),
-      nn_output_size
-  )
-  # Assign a unique ID if not provided
-  creature_id = creature_id or next(_creature_id_counter)
-  creature = Creature(template['name'], owner, nn_model, template, creature_id=creature_id)
-  save_creature(creature)
-  return creature
+  output_size = 3 + len(config_stats.get('special_abilities', []))
+  hidden_sizes = config_stats.get('nn_config', {}).get('hidden_sizes', CONFIG['hidden_sizes'])
+  nn_model = NeuralNetwork(input_size, hidden_sizes, output_size)
+  return nn_model
