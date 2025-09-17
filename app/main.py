@@ -26,3 +26,8 @@ app.add_middleware(
 # Include your routes
 app.include_router(battle_routes.router, prefix="/battle", tags=["Battle"])
 app.include_router(player_routes.router, prefix="/player", tags=["Player"])  # 👈 add this
+
+# Bootstrap
+from app.modules.startup import bootstrap_players
+
+# bootstrap_players()
