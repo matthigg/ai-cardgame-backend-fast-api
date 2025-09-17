@@ -49,6 +49,9 @@ class Creature:
     # NN config
     self.nn_config = config_stats.get('nn_config', {})
 
+    # Activations history (for training visualization)
+    self.activations_history = []
+
     # Actions list
     self.actions = [
       ('attack', self.attack),

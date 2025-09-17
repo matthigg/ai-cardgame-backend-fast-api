@@ -1,60 +1,43 @@
 import os
 import torch
 from app.config import CONFIG
-from app.modules.utils import create_checkpoint_paths
+from app.modules.creature_manager import Creature, save_creature
+from app.modules.utils import create_checkpoint_path
 
-# ------------------ Network Persistence ------------------
+def save_checkpoints(creature_A: Creature, creature_B: Creature, optimizer_A, optimizer_B):
+  os.makedirs(CONFIG['checkpoint_dir'], exist_ok=True)
 
-def create_checkpoint_file(checkpoint_path, creature, optimizer):
-  print(f"⚠️ Missing checkpoint: {checkpoint_path}. Creating new one...")
-  os.makedirs(os.path.dirname(checkpoint_path), exist_ok=True)
+  A_path = create_checkpoint_path(creature_A)
+  B_path = create_checkpoint_path(creature_B)
+
   torch.save({
-    'epoch': 0,
-    'model_state_dict': creature.nn.state_dict(),
-    'optimizer_state_dict': optimizer.state_dict(),
-    'special_abilities': creature.special_abilities  # store current specials
-  }, checkpoint_path)
-  print(f"✅ Created fresh checkpoint for {creature.name} at epoch 0: {checkpoint_path}")
+    'epoch': getattr(creature_A, 'current_epoch', 0),
+    'model_state_dict': creature_A.nn.state_dict(),
+    'optimizer_state_dict': optimizer_A.state_dict(),
+    'activations_history': getattr(creature_A, 'activations_history', [])
+  }, A_path)
 
-def save_checkpoint(checkpoint_path, creature, optimizer):
-  checkpoint = torch.load(checkpoint_path)
-  last_epoch = checkpoint.get('epoch', 0)
   torch.save({
-    'epoch': last_epoch + CONFIG['epoch_batch_size'],
-    'model_state_dict': creature.nn.state_dict(),
-    'optimizer_state_dict': optimizer.state_dict(),
-    'special_abilities': creature.special_abilities
-  }, checkpoint_path)
-  print(f"💾 Saved checkpoint for {creature.name} at epoch {last_epoch}: {checkpoint_path}")
+    'epoch': getattr(creature_B, 'current_epoch', 0),
+    'model_state_dict': creature_B.nn.state_dict(),
+    'optimizer_state_dict': optimizer_B.state_dict(),
+    'activations_history': getattr(creature_B, 'activations_history', [])
+  }, B_path)
 
-def load_checkpoint(checkpoint_path, creature, optimizer):
-  if not os.path.isfile(checkpoint_path):
-    create_checkpoint_file(checkpoint_path, creature, optimizer)
-    return 0
-  checkpoint = torch.load(checkpoint_path)
+def resume_from_checkpoint(creature_A: Creature, creature_B: Creature, optimizer_A, optimizer_B):
+  A_path = create_checkpoint_path(creature_A)
+  B_path = create_checkpoint_path(creature_B)
 
-  # Check if special abilities match
-  saved_specials = checkpoint.get('special_abilities', [])
-  if saved_specials != creature.special_abilities:
-    print(f"⚠️ Special abilities changed for {creature.name}. Resetting checkpoint.")
-    create_checkpoint_file(checkpoint_path, creature, optimizer)
-    return 0
+  if os.path.exists(A_path):
+    checkpoint_A = torch.load(A_path)
+    creature_A.nn.load_state_dict(checkpoint_A['model_state_dict'])
+    optimizer_A.load_state_dict(checkpoint_A['optimizer_state_dict'])
+    creature_A.activations_history = checkpoint_A.get('activations_history', [])
+    creature_A.current_epoch = checkpoint_A.get('epoch', 0)
 
-  creature.nn.load_state_dict(checkpoint['model_state_dict'])
-  optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-  last_epoch = checkpoint.get('epoch', 0)
-  print(f"📂 Resumed {creature.name} from {checkpoint_path} at epoch {last_epoch}")
-  return last_epoch
-
-def save_checkpoints(creature_A, creature_B, optimizer_A, optimizer_B):
-  A_path, B_path = create_checkpoint_paths(creature_A, creature_B)
-  save_checkpoint(A_path, creature_A, optimizer_A)
-  save_checkpoint(B_path, creature_B, optimizer_B)
-
-def resume_from_checkpoint(creature_A, creature_B, optimizer_A, optimizer_B):
-  A_path, B_path = create_checkpoint_paths(creature_A, creature_B)
-  last_epoch_A = load_checkpoint(A_path, creature_A, optimizer_A)
-  last_epoch_B = load_checkpoint(B_path, creature_B, optimizer_B)
-  print("🔄 Checkpoint summary:")
-  print(f"  {creature_A.name} -> {A_path} (next epoch: {last_epoch_A})")
-  print(f"  {creature_B.name} -> {B_path} (next epoch: {last_epoch_B})")
+  if os.path.exists(B_path):
+    checkpoint_B = torch.load(B_path)
+    creature_B.nn.load_state_dict(checkpoint_B['model_state_dict'])
+    optimizer_B.load_state_dict(checkpoint_B['optimizer_state_dict'])
+    creature_B.activations_history = checkpoint_B.get('activations_history', [])
+    creature_B.current_epoch = checkpoint_B.get('epoch', 0)

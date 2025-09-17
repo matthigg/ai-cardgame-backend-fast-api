@@ -19,13 +19,13 @@ CONFIG = {
   'write_battle_summary_log': True,
   'sort_logs_by_creature': False,
 
-  'epsilon': 0.9,
-  'eps_min': 0.05,
-  'eps_decay_rate': 0.99,
-  'alpha_baseline': 0.05,
-  'entropy_beta': 0.001,
-  'learning_rate': 0.001,
-  'hidden_sizes': [4, 4],
+  # 'epsilon': 0.9,
+  # 'eps_min': 0.05,
+  # 'eps_decay_rate': 0.99,
+  # 'alpha_baseline': 0.05,
+  # 'entropy_beta': 0.001,
+  # 'learning_rate': 0.001,
+  # 'hidden_sizes': [4, 4],
 
   'attack_damage': 20,
   'energy_regen_base': 10,
@@ -56,7 +56,7 @@ SPECIAL_ABILITIES = {
 CREATURE_TEMPLATES = {
   'A': {
     'name': 'A',
-    'id': 1,
+    'creature_template_id': 1,
     'hp': 100,
     'max_hp': 100,
     'energy': 100,
@@ -85,7 +85,7 @@ CREATURE_TEMPLATES = {
   },
   'B': {
     'name': 'B',
-    'id': 2,
+    'creature_template_id': 2,
     'hp': 100,
     'max_hp': 100,
     'energy': 100,

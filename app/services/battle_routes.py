@@ -5,7 +5,7 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from app.config import CONFIG
 from app.modules.training_loop import training_loop  # <- updated synchronous version
-from app.modules.utils import create_checkpoint_paths_by_name
+from app.modules.utils import create_checkpoint_path
 
 router = APIRouter()
 
@@ -28,7 +28,8 @@ def get_summary():
 def nn_graph(creature_name: str):
   """Return weights, biases, and normalized activations_history for a creature."""
 
-  A_path, B_path = create_checkpoint_paths_by_name('A', 'B')
+  A_path = create_checkpoint_path({ 'name': 'A', id: 101 })
+  B_path = create_checkpoint_path({ 'name': 'B', id: 102 })
   path_map = {'A': A_path, 'B': B_path}
 
   if creature_name not in path_map:
