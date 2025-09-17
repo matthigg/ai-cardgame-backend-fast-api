@@ -4,7 +4,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from app.config import ACTION_NAMES, CONFIG
+from app.config import ACTION_NAMES, CHECKPOINT_DIR, PLAYERS_DIR
+
+os.makedirs(PLAYERS_DIR, exist_ok=True)
+os.makedirs(CHECKPOINT_DIR, exist_ok=True)
 
 def create_state(creature, opponent):
   return torch.tensor([creature.hp, creature.energy, opponent.hp, opponent.energy], dtype=torch.float32)
@@ -19,7 +22,8 @@ def choose_action(nn_model, state, eps):
     action_idx = dist.sample().item()
   return action_idx, probs
 
-def create_checkpoint_path(creature):
-  file_name = f"checkpoint_{creature.name}_{creature.id}"
-  complete_path = f"{CONFIG['checkpoint_dir']}/{file_name}.pt"
-  return complete_path
+def get_player_json_path(player_name: str):
+  return os.path.join(PLAYERS_DIR, f"{player_name.lower()}.json")
+
+def get_checkpoint_path(creature_id: int):
+  return os.path.join(CHECKPOINT_DIR, f"{creature_id}.pt")

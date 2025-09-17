@@ -1,8 +1,10 @@
 # app/modules/creature_manager.py
-import numpy as np
+import os
+import json
 import torch
-from app.config import ACTION_NAMES, CONFIG, DOT_DAMAGE, SPECIAL_ABILITIES
+from app.config import ACTION_NAMES, CONFIG, CREATURE_TEMPLATES
 from app.modules.neural_network import NeuralNetwork
+from app.modules.utils import get_player_json_path, get_checkpoint_path
 
 class Creature:
   def __init__(self, name, owner, nn_model, config_stats, creature_id):
@@ -31,7 +33,7 @@ class Creature:
     # NN config
     self.nn_config = config_stats.get('nn_config', {})
 
-    # Activations history (for training visualization)
+    # Activations history
     self.activations_history = []
 
     # Actions list
@@ -56,45 +58,8 @@ class Creature:
   def is_alive(self):
     return self.hp > 0
 
-  def process_statuses(self, opponent, abl_zero_reward):
-    for status in list(self.statuses.keys()):
-      if status == 'poison':
-        self.hp -= DOT_DAMAGE['poison_damage']
-        if self.hp <= 0:
-          abl_zero_reward(self, opponent, '*POISONED*', 99)
-      self.statuses[status] -= 1
-      if self.statuses[status] <= 0:
-        del self.statuses[status]
-
-  def attack(self, opponent):
-    dmg = CONFIG['attack_damage']
-    if 'defend' in opponent.statuses:
-      dmg = int(np.ceil(dmg / 2))
-    opponent.hp -= dmg
-    self.energy = min(self.max_energy, self.energy + CONFIG['energy_regen_base'])
-    return self.reward_config.get('attack', CONFIG['reward_attack'])
-
-  def defend(self, opponent=None):
-    self.statuses['defend'] = 1
-    self.energy = min(self.max_energy, self.energy + CONFIG['energy_regen_base'])
-    return self.reward_config.get('defend', CONFIG['reward_defend'])
-
-  def use_special(self, opponent, ability_name):
-    ability = SPECIAL_ABILITIES.get(ability_name)
-    if ability and self.energy >= ability['energy_cost']:
-      self.energy -= ability['energy_cost']
-      ability['apply'](self, opponent)
-      return self.reward_config.get(ability_name, 0.01)
-    return 0.0
-
-  def recover(self, opponent=None):
-    if self.energy >= self.max_energy:
-      return -self.reward_config.get('recover', CONFIG['reward_recover'])
-    self.energy = min(self.max_energy, self.energy + CONFIG['energy_regen_recover'])
-    return self.reward_config.get('recover', CONFIG['reward_recover'])
-
   def to_dict(self):
-    """Serialize creature for storing in player.json (checkpoint path stored separately)."""
+    """Serialize creature for player.json (checkpoint path stored separately)."""
     return {
       "id": self.id,
       "name": self.name,
@@ -112,7 +77,6 @@ class Creature:
 
   @classmethod
   def from_dict(cls, data, nn_model):
-    """Instantiate Creature from player.json data + loaded NN."""
     return cls(
       name=data['name'],
       owner=data['owner'],
@@ -120,11 +84,48 @@ class Creature:
       config_stats=data,
       creature_id=data['id']
     )
+  
+# ------------------ Creature neural network functions ------------------
 
 def build_nn_for_creature(config_stats):
-  """Helper to create a NeuralNetwork for a creature based on its config."""
   input_size = len(ACTION_NAMES)
   output_size = 3 + len(config_stats.get('special_abilities', []))
   hidden_sizes = config_stats.get('nn_config', {}).get('hidden_sizes', CONFIG['hidden_sizes'])
   nn_model = NeuralNetwork(input_size, hidden_sizes, output_size)
   return nn_model
+
+# ------------------ Creature fetch functions ------------------
+
+def fetch_creature_from_template(template_key: str, owner: str, creature_id: int):
+  """Build a Creature from a template (used when player.json or creature not found)."""
+  template = CREATURE_TEMPLATES[template_key]
+  nn_model = build_nn_for_creature(template)
+  creature = Creature(
+    name=template['name'],
+    owner=owner,
+    nn_model=nn_model,
+    config_stats=template,
+    creature_id=creature_id
+  )
+  return creature
+
+def fetch_creature_from_player_json(player_name: str, creature_id: int):
+  """Load a Creature from player.json and resume from checkpoint."""
+  player_path = get_player_json_path(player_name)
+  if not os.path.exists(player_path):
+    return None
+
+  with open(player_path, "r") as f:
+    player_data = json.load(f)
+
+  creature_entry = next((c for c in player_data['creatures'] if c['id'] == creature_id), None)
+  if not creature_entry:
+    return None
+
+  # Build NN and load checkpoint
+  nn_model = build_nn_for_creature(creature_entry)
+  checkpoint_path = creature_entry.get('nn_checkpoint')
+  if checkpoint_path and os.path.exists(checkpoint_path):
+    checkpoint = torch.load(checkpoint_path)
+    nn_model.load_state_dict(checkpoint['model_state_dict'])
+  return Creature.from_dict(creature_entry, nn_model)

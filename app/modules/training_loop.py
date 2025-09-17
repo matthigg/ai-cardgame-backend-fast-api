@@ -1,13 +1,13 @@
 import os
 import copy
 import torch
-from app.config import CONFIG, PLAYER_TEMPLATES, CREATURE_TEMPLATES
+from app.config import CONFIG
 from app.modules.creature_manager import Creature
 from app.modules.battle_simulation import simulate_battle
 from app.modules.logging_utils import write_logs
 from app.modules.neural_network import reinforce_update, NeuralNetwork
 from app.modules.network_persistence import resume_from_checkpoint, save_checkpoints
-from app.modules.utils import create_checkpoint_path
+# from app.modules.utils import create_checkpoint_path
 
 def capture_activations(creature, input_tensor):
   """Return normalized neuron activations for visualization."""

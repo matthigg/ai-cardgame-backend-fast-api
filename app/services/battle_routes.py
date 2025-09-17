@@ -3,9 +3,9 @@ import os
 import torch
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
-from app.config import CONFIG, PLAYER_TEMPLATES
+from app.config import CONFIG
 from app.modules.training_loop import training_loop  # <- updated synchronous version
-from app.modules.utils import create_checkpoint_path
+# from app.modules.utils import create_checkpoint_path
 
 router = APIRouter()
 

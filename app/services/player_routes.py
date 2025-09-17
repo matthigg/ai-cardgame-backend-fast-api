@@ -1,6 +1,6 @@
 # app/api/player_routes.py
 from fastapi import APIRouter
-from app.modules.player_manager import add_active_player, remove_active_player, list_active_players
+from app.modules.player_manager import remove_active_player, list_active_players
 
 router = APIRouter()
 

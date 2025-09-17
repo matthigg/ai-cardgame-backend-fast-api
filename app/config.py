@@ -5,6 +5,9 @@ import numpy as np
 
 ACTION_NAMES = ['attack', 'defend', 'special', 'recover']
 
+PLAYERS_DIR = "players"
+CHECKPOINT_DIR = "checkpoints"
+
 CONFIG = {
   'seed': 43,
   'use_seed': True,
@@ -61,8 +64,8 @@ CREATURE_REWARD_CONFIG = {
 }
 
 CREATURE_TEMPLATES = {
-  'A': {
-    'name': 'A',
+  'Bear': {
+    'name': 'Bear',
     'creature_template_id': 1,
     'hp': 100,
     'max_hp': 100,
@@ -73,8 +76,8 @@ CREATURE_TEMPLATES = {
     'nn_config': CREATURE_NN_CONFIG,
     'reward_config': CREATURE_REWARD_CONFIG,
   },
-  'B': {
-    'name': 'B',
+  'Snake': {
+    'name': 'Snake',
     'creature_template_id': 2,
     'hp': 100,
     'max_hp': 100,
@@ -87,22 +90,6 @@ CREATURE_TEMPLATES = {
   }
 }
 
-PLAYER_TEMPLATES = {
-  1: {  # Player ID as the key
-    "id": 1,
-    "name": "Alice",
-    "creatures": [
-      { "template": "A", "id": 101 }  # Creature ID
-    ]
-  },
-  2: {
-    "id": 2,
-    "name": "Bob",
-    "creatures": [
-      { "template": "B", "id": 102 }
-    ]
-  }
-}
 
 
 

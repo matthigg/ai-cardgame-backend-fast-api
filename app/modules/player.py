@@ -1,6 +1,8 @@
 # app/modules/player.py
 import copy
 import itertools
+import os
+import json
 
 # global unique player id counter
 _player_id_counter = itertools.count(1)
@@ -34,30 +36,28 @@ class Player:
     return player
 
 # app/modules/player.py (continued)
-import os
-import json
-from app.config import PLAYER_TEMPLATES, CREATURE_TEMPLATES, CONFIG
 
-def init_players(player_templates=PLAYER_TEMPLATES, creature_templates=CREATURE_TEMPLATES):
-  creatures, optimizers = init_creatures(creature_templates)
-  players = {}
 
-  for pid, pdata in player_templates.items():
-    player = Player(pdata['name'], player_id=pdata['id'])
+# def init_players(player_templates=PLAYER_TEMPLATES, creature_templates=CREATURE_TEMPLATES):
+#   creatures, optimizers = init_creatures(creature_templates)
+#   players = {}
 
-    for cdata in pdata['creatures']:
-      ckey = cdata["template"]
-      cid = cdata["id"]
-      if ckey in creatures:
-        # Copy creature so each player has its own instance
-        c = creatures[ckey]
-        # Assign the unique template ID for this player
-        c.id = cid
-        player.add_creature(c)
+#   for pid, pdata in player_templates.items():
+#     player = Player(pdata['name'], player_id=pdata['id'])
 
-    players[pid] = player
+#     for cdata in pdata['creatures']:
+#       ckey = cdata["template"]
+#       cid = cdata["id"]
+#       if ckey in creatures:
+#         # Copy creature so each player has its own instance
+#         c = creatures[ckey]
+#         # Assign the unique template ID for this player
+#         c.id = cid
+#         player.add_creature(c)
 
-  return players, creatures, optimizers
+#     players[pid] = player
+
+#   return players, creatures, optimizers
 
 
 # app/modules/player_persistence.py
