@@ -2,7 +2,7 @@
 import os
 import json
 import torch
-from app.config import ACTION_NAMES, CONFIG, CREATURE_TEMPLATES
+from app.config import ACTION_NAMES, CONFIG, CREATURE_TEMPLATES, SPECIAL_ABILITIES
 from app.modules.neural_network import NeuralNetwork
 from app.modules.utils import get_player_json_path, get_checkpoint_path
 
@@ -45,6 +45,36 @@ class Creature:
     for ability_name in self.special_abilities:
       self.actions.append((ability_name, self.use_special))
 
+  def attack(self, opponent):
+    dmg = CONFIG['attack_damage']
+    if 'defend' in opponent.statuses:
+      dmg = int(np.ceil(dmg / 2))
+    opponent.hp -= dmg
+    self.energy = min(self.max_energy, self.energy + CONFIG['energy_regen_base'])
+    return self.reward_config.get('attack', CONFIG['reward_attack'])
+
+  def defend(self, opponent=None):
+    self.statuses['defend'] = 1
+    self.energy = min(self.max_energy, self.energy + CONFIG['energy_regen_base'])
+    return self.reward_config.get('defend', CONFIG['reward_defend'])
+
+  def use_special(self, opponent, ability_name):
+    ability = SPECIAL_ABILITIES.get(ability_name)
+    if ability and self.energy >= ability['energy_cost']:
+      self.energy -= ability['energy_cost']
+      ability['apply'](self, opponent)
+      return self.reward_config.get(ability_name, 0.01)
+    return 0.0
+
+  def recover(self, opponent=None):
+    if self.energy >= self.max_energy:
+      return -self.reward_config.get('recover', CONFIG['reward_recover'])
+    self.energy = min(self.max_energy, self.energy + CONFIG['energy_regen_recover'])
+    return self.reward_config.get('recover', CONFIG['reward_recover'])
+
+  def is_alive(self):
+    return self.hp > 0
+  
   def reset(self):
     self.hp = self.max_hp
     self.energy = self.max_energy
@@ -54,9 +84,6 @@ class Creature:
       "energy": self.energy,
       "statuses": self.statuses
     }
-
-  def is_alive(self):
-    return self.hp > 0
 
   def to_dict(self):
     """Serialize creature for player.json (checkpoint path stored separately)."""
@@ -90,7 +117,7 @@ class Creature:
 def build_nn_for_creature(config_stats):
   input_size = len(ACTION_NAMES)
   output_size = 3 + len(config_stats.get('special_abilities', []))
-  hidden_sizes = config_stats.get('nn_config', {}).get('hidden_sizes', CONFIG['hidden_sizes'])
+  hidden_sizes = config_stats.get('nn_config', {}).get('hidden_sizes')
   nn_model = NeuralNetwork(input_size, hidden_sizes, output_size)
   return nn_model
 

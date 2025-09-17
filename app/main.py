@@ -30,4 +30,4 @@ app.include_router(player_routes.router, prefix="/player", tags=["Player"])  # ð
 # Bootstrap
 from app.modules.startup import bootstrap_players
 
-# bootstrap_players()
+bootstrap_players()
