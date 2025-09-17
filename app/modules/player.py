@@ -44,14 +44,23 @@ def init_players(player_templates=PLAYER_TEMPLATES, creature_templates=CREATURE_
   creatures, optimizers = init_creatures(creature_templates)
   players = {}
 
-  for pname, pdata in player_templates.items():
-    player = Player(pdata['name'])
-    for ckey in pdata['creatures']:
+  for pid, pdata in player_templates.items():
+    player = Player(pdata['name'], player_id=pdata['id'])
+
+    for cdata in pdata['creatures']:
+      ckey = cdata["template"]
+      cid = cdata["id"]
       if ckey in creatures:
-        player.add_creature(creatures[ckey])
-    players[pname] = player
+        # Copy creature so each player has its own instance
+        c = creatures[ckey]
+        # Assign the unique template ID for this player
+        c.id = cid
+        player.add_creature(c)
+
+    players[pid] = player
 
   return players, creatures, optimizers
+
 
 # app/modules/player_persistence.py
 import os, json

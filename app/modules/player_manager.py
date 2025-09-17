@@ -23,26 +23,32 @@ def add_active_player(name: str, pid: int, players_dir="players") -> Player | No
   os.makedirs(players_dir, exist_ok=True)
   path = os.path.join(players_dir, f"player_{pid}.json")
 
-  # Init creatures so we can attach them to player
+  # Init all creatures from templates
   creatures, _ = init_creatures(CREATURE_TEMPLATES)
 
   if os.path.exists(path):
     # Load existing player file
     player = load_player(path, creatures)
   else:
-    # Create new player from template or blank
-    template = PLAYER_TEMPLATES.get(name, {"name": name, "creatures": []})
+    # Create new player from template
+    template = PLAYER_TEMPLATES.get(pid, {"name": name, "creatures": []})
     player = Player(template["name"], pid)
-    for ckey in template.get("creatures", []):
+
+    for cdata in template.get("creatures", []):
+      ckey = cdata["template"]  # template key
+      cid = cdata["id"]         # unique creature ID
       if ckey in CREATURE_TEMPLATES:
-        # Create persistent creature per player
-        creature = create_creature(ckey, owner=player.name)
+        # create persistent creature per player with correct ID
+        creature = create_creature(ckey, owner=player.name, creature_id=cid)
         add_active_creature(creature)
         player.add_creature(creature)
+
+    # Save the newly created player
     save_player(player)
 
   _active_players[key] = player
   return player
+
 
 def remove_active_player(name: str, pid: int):
   _active_players.pop(_make_key(name, pid), None)
