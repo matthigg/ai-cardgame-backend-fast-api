@@ -1,6 +1,6 @@
 import torch
 import random
-from app.config import ACTION_NAMES, CONFIG
+from app.config import ACTION_NAMES, CONFIG, CREATURE_REWARD_CONFIG
 from app.modules.logging_utils import append_battle_log
 from app.modules.utils import choose_action, create_state
 
@@ -100,10 +100,10 @@ def simulate_battle(creature_A, creature_B, epoch, max_ticks, epsilons):
 
 def finalize_battle(creature_A, creature_B, rewards, battle_log, stalemate=False):
   """Determine winner, apply rewards, and finalize log ordering."""
-  reward_win_A = creature_A.reward_config.get('win', CONFIG['reward_win'])
-  reward_lose_A = creature_A.reward_config.get('lose', CONFIG['reward_lose'])
-  reward_win_B = creature_B.reward_config.get('win', CONFIG['reward_win'])
-  reward_lose_B = creature_B.reward_config.get('lose', CONFIG['reward_lose'])
+  reward_win_A = creature_A.reward_config.get('win', CREATURE_REWARD_CONFIG['win'])
+  reward_lose_A = creature_A.reward_config.get('lose', CREATURE_REWARD_CONFIG['lose'])
+  reward_win_B = creature_B.reward_config.get('win', CREATURE_REWARD_CONFIG['win'])
+  reward_lose_B = creature_B.reward_config.get('lose', CREATURE_REWARD_CONFIG['lose'])
 
   winner = None
   if stalemate:

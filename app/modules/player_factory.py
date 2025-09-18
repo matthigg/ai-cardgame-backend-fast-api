@@ -10,6 +10,7 @@ from app.config import CREATURE_TEMPLATES
 def create_player(name: str, creature_keys: list):
   """Create a Player instance, its creatures, and checkpoint files."""
   player = Player(name)
+
   for idx, key in enumerate(creature_keys):
     template = CREATURE_TEMPLATES[key]
 
@@ -17,11 +18,17 @@ def create_player(name: str, creature_keys: list):
     creature_id = player.id * 10 + (idx + 1)
     nn_model = build_nn_for_creature(template)
 
-    # Save initial checkpoint
+    # Create optimizer for the creature
+    optimizer = torch.optim.Adam(
+      nn_model.parameters(),
+      lr=template.get('nn_config', {}).get('learning_rate', 0.001)
+    )
+
+    # Save initial checkpoint with valid optimizer state
     checkpoint_path = get_checkpoint_path(player.name, player.id, template['name'], creature_id)
     torch.save({
       "model_state_dict": nn_model.state_dict(),
-      "optimizer_state_dict": None,
+      "optimizer_state_dict": optimizer.state_dict(),
       "activations_history": []
     }, checkpoint_path)
 

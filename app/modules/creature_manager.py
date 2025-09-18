@@ -2,7 +2,8 @@
 import os
 import json
 import torch
-from app.config import ACTION_NAMES, CONFIG, CREATURE_TEMPLATES, DOT_DAMAGE, SPECIAL_ABILITIES
+import numpy as np
+from app.config import ACTION_NAMES, CONFIG, CREATURE_BASE_STATS, CREATURE_REWARD_CONFIG, CREATURE_TEMPLATES, DOT_DAMAGE, SPECIAL_ABILITIES
 from app.modules.neural_network import NeuralNetwork
 from app.modules.utils import get_player_json_path, get_checkpoint_path
 
@@ -46,17 +47,17 @@ class Creature:
       self.actions.append((ability_name, self.use_special))
 
   def attack(self, opponent):
-    dmg = CONFIG['attack_damage']
+    dmg = CREATURE_BASE_STATS['attack_damage']
     if 'defend' in opponent.statuses:
       dmg = int(np.ceil(dmg / 2))
     opponent.hp -= dmg
-    self.energy = min(self.max_energy, self.energy + CONFIG['energy_regen_base'])
-    return self.reward_config.get('attack', CONFIG['reward_attack'])
+    self.energy = min(self.max_energy, self.energy + CREATURE_BASE_STATS['energy_regen_base'])
+    return self.reward_config.get('attack', CREATURE_REWARD_CONFIG['attack'])
 
   def defend(self, opponent=None):
     self.statuses['defend'] = 1
-    self.energy = min(self.max_energy, self.energy + CONFIG['energy_regen_base'])
-    return self.reward_config.get('defend', CONFIG['reward_defend'])
+    self.energy = min(self.max_energy, self.energy + CREATURE_BASE_STATS['energy_regen_base'])
+    return self.reward_config.get('defend', CREATURE_REWARD_CONFIG['defend'])
 
   def use_special(self, opponent, ability_name):
     ability = SPECIAL_ABILITIES.get(ability_name)
@@ -68,9 +69,9 @@ class Creature:
 
   def recover(self, opponent=None):
     if self.energy >= self.max_energy:
-      return -self.reward_config.get('recover', CONFIG['reward_recover'])
-    self.energy = min(self.max_energy, self.energy + CONFIG['energy_regen_recover'])
-    return self.reward_config.get('recover', CONFIG['reward_recover'])
+      return -self.reward_config.get('recover', CREATURE_REWARD_CONFIG['recover'])
+    self.energy = min(self.max_energy, self.energy + CREATURE_BASE_STATS['energy_regen_recover'])
+    return self.reward_config.get('recover', CREATURE_REWARD_CONFIG['recover'])
 
   def is_alive(self):
     return self.hp > 0
@@ -151,6 +152,7 @@ def fetch_creature_from_player_json(
   player_id: int,
   creature_id: int
 ):
+
   """Load a Creature from player.json and resume from checkpoint."""
   player_path = get_player_json_path(player_name, player_id)
   if not os.path.exists(player_path):

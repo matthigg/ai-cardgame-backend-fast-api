@@ -22,10 +22,6 @@ CONFIG = {
   'write_battle_logs': True,
   'write_battle_summary_log': True,
   'sort_logs_by_creature': False,
-
-  'attack_damage': 20,
-  'energy_regen_base': 10,
-  'energy_regen_recover': 60,
 }
 
 DOT_DAMAGE = {
@@ -41,6 +37,17 @@ SPECIAL_ABILITIES = {
     'energy_cost': 40,
     'apply': lambda c, o: o.statuses.update({'stun': 2}) if 'defend' not in o.statuses else None
   }
+}
+
+CREATURE_BASE_STATS = {
+  'attack_damage': 20,
+  'energy_regen_base': 10,
+  'energy_regen_recover': 60,
+  'hp': 100,
+  'max_hp': 100,
+  'energy': 100,
+  'max_energy': 100,
+  'speed': 10,
 }
 
 CREATURE_NN_CONFIG = {
@@ -68,11 +75,7 @@ CREATURE_TEMPLATES = {
   'Bear': {
     'name': 'Bear',
     'creature_template_id': 1,
-    'hp': 100,
-    'max_hp': 100,
-    'energy': 100,
-    'max_energy': 100,
-    'speed': 10,
+    **CREATURE_BASE_STATS,
     'special_abilities': ['stun'],
     'nn_config': CREATURE_NN_CONFIG,
     'reward_config': CREATURE_REWARD_CONFIG,
@@ -80,11 +83,7 @@ CREATURE_TEMPLATES = {
   'Snake': {
     'name': 'Snake',
     'creature_template_id': 2,
-    'hp': 100,
-    'max_hp': 100,
-    'energy': 100,
-    'max_energy': 100,
-    'speed': 10,
+    **CREATURE_BASE_STATS,
     'special_abilities': ['poison'],
     'nn_config': CREATURE_NN_CONFIG,
     'reward_config': CREATURE_REWARD_CONFIG,

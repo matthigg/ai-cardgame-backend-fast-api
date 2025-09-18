@@ -12,7 +12,20 @@ router = APIRouter()
 @router.get("/train")
 def train_endpoint():
   """Run full training loop and save checkpoints, returning final summary."""
-  result = training_loop()
+
+  player_name_A = 'Alice'
+  player_id_A = 1
+  creature_name_A = 'Bear'
+  creature_id_A = 11
+  player_name_B = 'Bob'
+  player_id_B = 2
+  creature_name_B = 'Snake'
+  creature_id_B = 21
+  
+  result = training_loop(
+    player_name_A, player_id_A, creature_name_A, creature_id_A,
+    player_name_B, player_id_B, creature_name_B, creature_id_B
+  )
   return {"status": "completed", "summary": result.get("summary")}
 
 @router.get("/summary")

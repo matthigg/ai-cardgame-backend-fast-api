@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from app.config import CONFIG
+from app.config import CONFIG, CREATURE_REWARD_CONFIG
 
 # ------------------ Neural Network ------------------
 
@@ -29,11 +29,11 @@ def reinforce_update(creature, optimizer, battle_log, baseline, entropy_beta=Non
   # Use creature-specific rewards for all actions, including special abilities
   reward_config = getattr(creature, 'reward_config', {})
   reward_map = {
-    'attack': reward_config.get('attack', CONFIG['reward_attack']),
-    'defend': reward_config.get('defend', CONFIG['reward_defend']),
-    'recover': reward_config.get('recover', CONFIG['reward_recover']),
-    'win': reward_config.get('win', CONFIG['reward_win']),
-    'lose': reward_config.get('lose', CONFIG['reward_lose'])
+    'attack': reward_config.get('attack', CREATURE_REWARD_CONFIG['attack']),
+    'defend': reward_config.get('defend', CREATURE_REWARD_CONFIG['defend']),
+    'recover': reward_config.get('recover', CREATURE_REWARD_CONFIG['recover']),
+    'win': reward_config.get('win', CREATURE_REWARD_CONFIG['win']),
+    'lose': reward_config.get('lose', CREATURE_REWARD_CONFIG['lose'])
   }
   # Add any special abilities defined in reward_config
   for ability_name in getattr(creature, 'special_abilities', []):

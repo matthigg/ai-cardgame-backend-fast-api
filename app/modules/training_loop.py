@@ -36,32 +36,20 @@ def capture_activations(creature, input_tensor):
 
   return activations
 
-def _parse_player_path(player_path: str) -> tuple[str, int]:
-  """Extract (player_name, player_id) from a player JSON file path."""
-  basename = os.path.splitext(os.path.basename(player_path))[0]
-  if "_" not in basename:
-    raise ValueError(f"Invalid player file name format: {basename}")
-  name, id_str = basename.rsplit("_", 1)
-  try:
-    pid = int(id_str)
-  except ValueError:
-    raise ValueError(f"Invalid player id in filename: {id_str}")
-  return name, pid
+def training_loop(
+  player_name_A: str, player_id_A: int, creature_name_A: str, creature_id_A: int,
+  player_name_B: str, player_id_B: int, creature_name_B: str, creature_id_B: int,
+):
 
-def training_loop(playerA_path: str, playerB_path: str, creature_id_A: int, creature_id_B: int):
   """Run training loop between two creatures defined in player JSON files."""
-  os.makedirs(BATTLE_LOGS_DIR, exist_ok=True)
 
-  playerA_name, playerA_id = _parse_player_path(playerA_path)
-  playerB_name, playerB_id = _parse_player_path(playerB_path)
-
-  creature_A = fetch_creature_from_player_json(playerA_name, playerA_id, creature_id_A)
-  creature_B = fetch_creature_from_player_json(playerB_name, playerB_id, creature_id_B)
+  creature_A = fetch_creature_from_player_json(player_name_A, player_id_A, creature_id_A)
+  creature_B = fetch_creature_from_player_json(player_name_B, player_id_B, creature_id_B)
 
   if creature_A is None:
-    raise ValueError(f"Creature {creature_id_A} for player {playerA_name} not found.")
+    raise ValueError(f"Creature {creature_id_A} for player {player_name_A} not found.")
   if creature_B is None:
-    raise ValueError(f"Creature {creature_id_B} for player {playerB_name} not found.")
+    raise ValueError(f"Creature {creature_id_B} for player {player_name_B} not found.")
 
   optimizer_A = torch.optim.Adam(
     creature_A.nn.parameters(),
@@ -72,9 +60,11 @@ def training_loop(playerA_path: str, playerB_path: str, creature_id_A: int, crea
     lr=creature_B.nn_config.get('learning_rate', 0.001)
   )
 
+  print('============= RESUME ==========================')
+  # Resume from checkpoint
   resume_from_checkpoint(
     creature_A, creature_B, optimizer_A, optimizer_B,
-    playerA_name, playerA_id, playerB_name, playerB_id
+    player_name_A, player_id_A, player_name_B, player_id_B
   )
 
   nn_config_A = creature_A.nn_config
@@ -130,26 +120,16 @@ def training_loop(playerA_path: str, playerB_path: str, creature_id_A: int, crea
       write_logs(batched_logs, {}, finalLog=False)
       batched_logs = []
 
+  print('============= SAVE ==========================')
+  # Save checkpoints including optimizer and activations
   save_checkpoints(
     creature_A, creature_B, optimizer_A, optimizer_B,
-    playerA_name, playerA_id, playerB_name, playerB_id
+    player_name_A, player_id_A, player_name_B, player_id_B
   )
 
-  A_path = get_checkpoint_path(playerA_name, playerA_id, creature_A.name, creature_A.id)
-  B_path = get_checkpoint_path(playerB_name, playerB_id, creature_B.name, creature_B.id)
-
-  if os.path.exists(A_path):
-    checkpoint_A = torch.load(A_path)
-    checkpoint_A['activations_history'] = creature_A.activations_history
-    torch.save(checkpoint_A, A_path)
-  if os.path.exists(B_path):
-    checkpoint_B = torch.load(B_path)
-    checkpoint_B['activations_history'] = creature_B.activations_history
-    torch.save(checkpoint_B, B_path)
-
   last_epochs = {
-    creature_A.name: (torch.load(A_path).get('epoch', 0) if os.path.exists(A_path) else 0),
-    creature_B.name: (torch.load(B_path).get('epoch', 0) if os.path.exists(B_path) else 0)
+    creature_A.name: getattr(creature_A, 'current_epoch', 0),
+    creature_B.name: getattr(creature_B, 'current_epoch', 0)
   }
 
   summary_data = write_logs(batched_logs_total, last_epochs, finalLog=True, final_wins=wins)
