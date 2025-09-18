@@ -2,7 +2,7 @@
 import os
 import json
 import torch
-from app.config import ACTION_NAMES, CONFIG, CREATURE_TEMPLATES, SPECIAL_ABILITIES
+from app.config import ACTION_NAMES, CONFIG, CREATURE_TEMPLATES, DOT_DAMAGE, SPECIAL_ABILITIES
 from app.modules.neural_network import NeuralNetwork
 from app.modules.utils import get_player_json_path, get_checkpoint_path
 
@@ -74,6 +74,16 @@ class Creature:
 
   def is_alive(self):
     return self.hp > 0
+  
+  def process_statuses(self, opponent, abl_zero_reward):
+    for status in list(self.statuses.keys()):
+      if status == 'poison':
+        self.hp -= DOT_DAMAGE['poison_damage']
+        if self.hp <= 0:
+          abl_zero_reward(self, opponent, '*POISONED*', 99)
+      self.statuses[status] -= 1
+      if self.statuses[status] <= 0:
+        del self.statuses[status]
   
   def reset(self):
     self.hp = self.max_hp
