@@ -4,8 +4,8 @@ import torch
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from app.config import CONFIG
-from app.modules.training_loop import training_loop  # <- updated synchronous version
-# from app.modules.utils import create_checkpoint_path
+from app.modules.training_loop import training_loop
+from app.modules.utils import get_checkpoint_path
 
 router = APIRouter()
 
@@ -17,6 +17,7 @@ def train_endpoint():
   player_id_A = 1
   creature_name_A = 'Bear'
   creature_id_A = 11
+
   player_name_B = 'Bob'
   player_id_B = 2
   creature_name_B = 'Snake'
@@ -37,65 +38,55 @@ def get_summary():
       return json.load(f)
   return {"error": "Summary not available yet"}
 
-@router.get("/nn-graph/{creature_name}")
-def nn_graph(creature_name: str):
-  """Return weights, biases, and normalized activations_history for a creature."""
+@router.get("/nn-graph")
+def nn_graph():
+  """
+  Return weights, biases, and normalized activations_history
+  for Alice's Bear and Bob's Snake.
+  """
 
-  # --- Hardcode Alice and Bob's creatures ---
-  alice_creature_data = PLAYER_TEMPLATES[1]['creatures'][0]
-  bob_creature_data   = PLAYER_TEMPLATES[2]['creatures'][0]
+  # --- Hardcode the same players/creatures used in /train ---
+  creatures = [
+    ("Alice", 1, "Bear", 11),
+    ("Bob", 2, "Snake", 21),
+  ]
 
-  # Create creature instances using helper
-  creature_A = create_creature('A', 'Alice', creature_id=alice_creature_data['id'])
-  creature_B = create_creature('B', 'Bob', creature_id=bob_creature_data['id'])
+  result = {}
+  for player_name, player_id, creature_name, creature_id in creatures:
+    checkpoint_path = get_checkpoint_path(player_name, player_id, creature_name, creature_id)
+    if not os.path.exists(checkpoint_path):
+      result[creature_name] = {"error": f"Checkpoint not found for {creature_name}"}
+      continue
 
-  A_path = create_checkpoint_path(creature_A)
-  B_path = create_checkpoint_path(creature_B)
-  path_map = {'A': A_path, 'B': B_path}
+    checkpoint = torch.load(checkpoint_path)
+    state_dict = checkpoint.get('model_state_dict', {})
+    activations_history = checkpoint.get('activations_history', [])
 
-  if creature_name not in path_map:
-    return JSONResponse({"error": "Invalid creature name"}, status_code=400)
+    weights, biases = [], []
+    for key in sorted(state_dict.keys()):
+      tensor = state_dict[key]
+      if 'weight' in key:
+        weights.append(tensor.tolist())
+      elif 'bias' in key:
+        biases.append(tensor.tolist())
 
-  checkpoint_path = path_map[creature_name]
-  if not os.path.exists(checkpoint_path):
-    return JSONResponse({"error": "Checkpoint not found"}, status_code=404)
-
-  checkpoint = torch.load(checkpoint_path)
-  state_dict = checkpoint.get('model_state_dict', {})
-  activations_history = checkpoint.get('activations_history', [])
-
-  # print('activations_history: ', activations_history)
-
-  weights, biases = [], []
-
-  for key in sorted(state_dict.keys()):
-    tensor = state_dict[key]
-    if 'weight' in key:
-      weights.append(tensor.tolist())
-    elif 'bias' in key:
-      biases.append(tensor.tolist())
-
-  # Normalize activations per layer, respecting the new structure
-  normalized_activations = []
-  for epoch_entry in activations_history:
-      
-      # print('epoch_entry: ', epoch_entry)
-
+    # Normalize activations per layer
+    normalized_activations = []
+    for epoch_entry in activations_history:
       epoch_layers = []
       for layer in epoch_entry['layers']:
-          # Ensure each neuron is a float (ignore extra display neurons)
-          flat_layer = [float(neuron) for neuron in layer if isinstance(neuron, (int, float))]
-          epoch_layers.append(flat_layer)
+        flat_layer = [float(neuron) for neuron in layer if isinstance(neuron, (int, float))]
+        epoch_layers.append(flat_layer)
       normalized_activations.append({
-          "name": epoch_entry['name'],
-          "epoch": epoch_entry['epoch'],
-          "layers": epoch_layers
+        "name": epoch_entry['name'],
+        "epoch": epoch_entry['epoch'],
+        "layers": epoch_layers
       })
 
+    result[creature_name] = {
+      "weights": weights,
+      "biases": biases,
+      "activations_history": normalized_activations
+    }
 
-  return {
-    "name": creature_name,
-    "weights": weights,
-    "biases": biases,
-    "activations_history": normalized_activations
-  }
+  return result
