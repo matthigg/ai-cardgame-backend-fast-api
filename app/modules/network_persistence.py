@@ -1,14 +1,19 @@
 import os
 import torch
-from app.config import CONFIG
 from app.modules.creature_manager import Creature
-# from app.modules.utils import create_checkpoint_path
+from app.modules.utils import get_checkpoint_path
 
-def save_checkpoints(creature_A: Creature, creature_B: Creature, optimizer_A, optimizer_B):
-  os.makedirs(CONFIG['checkpoint_dir'], exist_ok=True)
-
-  A_path = create_checkpoint_path(creature_A)
-  B_path = create_checkpoint_path(creature_B)
+def save_checkpoints(
+  creature_A: Creature, creature_B: Creature,
+  optimizer_A, optimizer_B,
+  playerA_name: str, playerA_id: int,
+  playerB_name: str, playerB_id: int
+):
+  """
+  Save checkpoints for both creatures with optimizers.
+  """
+  A_path = get_checkpoint_path(playerA_name, playerA_id, creature_A.name, creature_A.id)
+  B_path = get_checkpoint_path(playerB_name, playerB_id, creature_B.name, creature_B.id)
 
   torch.save({
     'epoch': getattr(creature_A, 'current_epoch', 0),
@@ -24,9 +29,17 @@ def save_checkpoints(creature_A: Creature, creature_B: Creature, optimizer_A, op
     'activations_history': getattr(creature_B, 'activations_history', [])
   }, B_path)
 
-def resume_from_checkpoint(creature_A: Creature, creature_B: Creature, optimizer_A, optimizer_B):
-  A_path = create_checkpoint_path(creature_A)
-  B_path = create_checkpoint_path(creature_B)
+def resume_from_checkpoint(
+  creature_A: Creature, creature_B: Creature,
+  optimizer_A, optimizer_B,
+  playerA_name: str, playerA_id: int,
+  playerB_name: str, playerB_id: int
+):
+  """
+  Resume training from checkpoints if available.
+  """
+  A_path = get_checkpoint_path(playerA_name, playerA_id, creature_A.name, creature_A.id)
+  B_path = get_checkpoint_path(playerB_name, playerB_id, creature_B.name, creature_B.id)
 
   if os.path.exists(A_path):
     checkpoint_A = torch.load(A_path)

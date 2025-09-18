@@ -6,8 +6,9 @@ import numpy as np
 ACTION_NAMES = ['attack', 'defend', 'special', 'recover']
 
 CHECKPOINT_DIR = "checkpoints"
-PLAYERS_DIR = "players"
 GENERATED_DIR = 'generated'
+BATTLE_LOGS_DIR = 'battle_logs'
+PLAYERS_DIR = "players"
 
 CONFIG = {
   'seed': 43,

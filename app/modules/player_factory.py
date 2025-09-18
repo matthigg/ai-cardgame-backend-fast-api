@@ -18,7 +18,7 @@ def create_player(name: str, creature_keys: list):
     nn_model = build_nn_for_creature(template)
 
     # Save initial checkpoint
-    checkpoint_path = get_checkpoint_path(key, creature_id)
+    checkpoint_path = get_checkpoint_path(player.name, player.id, template['name'], creature_id)
     torch.save({
       "model_state_dict": nn_model.state_dict(),
       "optimizer_state_dict": None,
