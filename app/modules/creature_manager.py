@@ -136,9 +136,13 @@ def fetch_creature_from_template(template_key: str, owner: str, creature_id: int
   )
   return creature
 
-def fetch_creature_from_player_json(player_name: str, creature_id: int):
+def fetch_creature_from_player_json(
+  player_name: str,
+  player_id: int,
+  creature_id: int
+):
   """Load a Creature from player.json and resume from checkpoint."""
-  player_path = get_player_json_path(player_name)
+  player_path = get_player_json_path(player_name, player_id)
   if not os.path.exists(player_path):
     return None
 

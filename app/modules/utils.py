@@ -4,10 +4,14 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from app.config import ACTION_NAMES, CHECKPOINT_DIR, PLAYERS_DIR
+from app.config import ACTION_NAMES, CHECKPOINT_DIR, GENERATED_DIR, PLAYERS_DIR
 
-os.makedirs(PLAYERS_DIR, exist_ok=True)
-os.makedirs(CHECKPOINT_DIR, exist_ok=True)
+# Ensure root generated directory exists
+os.makedirs(GENERATED_DIR, exist_ok=True)
+
+# Ensure nested directories exist
+os.makedirs(os.path.join(GENERATED_DIR, PLAYERS_DIR), exist_ok=True)
+os.makedirs(os.path.join(GENERATED_DIR, CHECKPOINT_DIR), exist_ok=True)
 
 def create_state(creature, opponent):
   return torch.tensor([creature.hp, creature.energy, opponent.hp, opponent.energy], dtype=torch.float32)
@@ -22,8 +26,8 @@ def choose_action(nn_model, state, eps):
     action_idx = dist.sample().item()
   return action_idx, probs
 
-def get_player_json_path(player_name: str):
-  return os.path.join(PLAYERS_DIR, f"{player_name.lower()}.json")
+def get_player_json_path(player_name: str, player_id: int):
+  return os.path.join(GENERATED_DIR, PLAYERS_DIR, f"{player_name.lower()}_{player_id}.json")
 
-def get_checkpoint_path(creature_id: int):
-  return os.path.join(CHECKPOINT_DIR, f"{creature_id}.pt")
+def get_checkpoint_path(creature_name: str, creature_id: int):
+  return os.path.join(GENERATED_DIR, CHECKPOINT_DIR, f"{creature_name.lower()}_{creature_id}.pt")
