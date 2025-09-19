@@ -51,7 +51,6 @@ CREATURE_BASE_STATS = {
 }
 
 CREATURE_NN_CONFIG = {
-  'hidden_sizes': [4, 4, 20, 3],
   'learning_rate': 0.001,
   'epsilon': 0.9,
   'eps_min': 0.05,
@@ -77,7 +76,10 @@ CREATURE_TEMPLATES = {
     'creature_template_id': 1,
     **CREATURE_BASE_STATS,
     'special_abilities': ['stun'],
-    'nn_config': CREATURE_NN_CONFIG,
+    'nn_config': {
+      **CREATURE_NN_CONFIG,
+    'hidden_sizes': [4, 8, 10, 3],
+    },
     'reward_config': CREATURE_REWARD_CONFIG,
   },
   'Snake': {
@@ -85,7 +87,10 @@ CREATURE_TEMPLATES = {
     'creature_template_id': 2,
     **CREATURE_BASE_STATS,
     'special_abilities': ['poison'],
-    'nn_config': CREATURE_NN_CONFIG,
+    'nn_config': {
+      **CREATURE_NN_CONFIG,
+      'hidden_sizes': [8, 6, 4],
+    },
     'reward_config': CREATURE_REWARD_CONFIG,
   }
 }
