@@ -1,6 +1,6 @@
 import json
 import os
-from app.config import CONFIG
+from app.config import BATTLE_LOGS_DIR, CONFIG, GENERATED_DIR
 from app.modules.utils import create_state
 
 # ------------------ Append Battle Log ------------------
@@ -28,8 +28,8 @@ def write_logs(batched_logs, last_epochs, finalLog, final_wins=None):
   """Write batched logs or final summary to disk."""
   start_epoch = batched_logs[0][0] if batched_logs else 0
   end_epoch = batched_logs[-1][0] if batched_logs else 0
-  filename = os.path.join(CONFIG['log_dir'], f'battle_log_{start_epoch:04d}_{end_epoch:04d}.txt')
-  filenameFinal = os.path.join(CONFIG['log_dir'], 'summary.txt')
+  filename = os.path.join(GENERATED_DIR, BATTLE_LOGS_DIR, f'battle_log_{start_epoch:04d}_{end_epoch:04d}.txt')
+  filenameFinal = os.path.join(GENERATED_DIR, BATTLE_LOGS_DIR, 'summary.txt')
 
   # Write normal logs
   if not finalLog and CONFIG['write_battle_logs']:
@@ -87,7 +87,7 @@ def write_logs(batched_logs, last_epochs, finalLog, final_wins=None):
     }
 
     # Write JSON file
-    filenameJson = os.path.join(CONFIG['log_dir'], 'summary.json')
+    filenameJson = os.path.join(GENERATED_DIR, BATTLE_LOGS_DIR, 'summary.json')
     with open(filenameJson, 'w') as fjson:
       json.dump(summary_data, fjson, indent=2)
 

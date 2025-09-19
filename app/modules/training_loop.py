@@ -1,7 +1,7 @@
 # app/modules/training_loop.py
 import os
 import torch
-from app.config import BATTLE_LOGS_DIR, CONFIG
+from app.config import CONFIG
 from app.modules.creature_manager import Creature, fetch_creature_from_player_json
 from app.modules.battle_simulation import simulate_battle
 from app.modules.logging_utils import write_logs

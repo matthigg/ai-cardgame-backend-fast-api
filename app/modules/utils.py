@@ -12,7 +12,7 @@ os.makedirs(GENERATED_DIR, exist_ok=True)
 # Ensure nested directories exist
 os.makedirs(os.path.join(GENERATED_DIR, PLAYERS_DIR), exist_ok=True)
 os.makedirs(os.path.join(GENERATED_DIR, CHECKPOINT_DIR), exist_ok=True)
-os.makedirs(BATTLE_LOGS_DIR, exist_ok=True)
+os.makedirs(os.path.join(GENERATED_DIR, BATTLE_LOGS_DIR), exist_ok=True)
 
 def create_state(creature, opponent):
   return torch.tensor(
