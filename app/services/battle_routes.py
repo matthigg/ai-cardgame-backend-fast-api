@@ -3,29 +3,29 @@ import os
 import torch
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 from app.config import CONFIG
 from app.modules.training_loop import training_loop
 from app.modules.utils import get_checkpoint_path
 
 router = APIRouter()
 
-@router.get("/train")
-def train_endpoint(
-  player_name_A: str,
-  player_id_A: int,
-  creature_name_A: str,
-  creature_id_A: int,
-  player_name_B: str,
-  player_id_B: int,
-  creature_name_B: str,
+class TrainRequest(BaseModel):
+  player_name_A: str
+  player_id_A: int
+  creature_name_A: str
+  creature_id_A: int
+  player_name_B: str
+  player_id_B: int
+  creature_name_B: str
   creature_id_B: int
-):
-  
+
+@router.post("/train")
+def train_endpoint(request: TrainRequest):
   """Run full training loop and save checkpoints, returning final summary."""
-  
   result = training_loop(
-    player_name_A, player_id_A, creature_name_A, creature_id_A,
-    player_name_B, player_id_B, creature_name_B, creature_id_B
+    request.player_name_A, request.player_id_A, request.creature_name_A, request.creature_id_A,
+    request.player_name_B, request.player_id_B, request.creature_name_B, request.creature_id_B
   )
   return {"status": "completed", "summary": result.get("summary")}
 
@@ -38,26 +38,16 @@ def get_summary():
       return json.load(f)
   return {"error": "Summary not available yet"}
 
-@router.get("/nn-graph")
-def nn_graph(
-  player_name_A: str,
-  player_id_A: int,
-  creature_name_A: str,
-  creature_id_A: int,
-  player_name_B: str,
-  player_id_B: int,
-  creature_name_B: str,
-  creature_id_B: int
-):
+@router.post("/nn-graph")
+def nn_graph(request: TrainRequest):
   """
   Return weights, biases, and normalized activations_history
   for Alice's Bear and Bob's Snake.
   """
 
-  # --- Hardcode the same players/creatures used in /train ---
   creatures = [
-    (player_name_A, player_id_A, creature_name_A, creature_id_A),
-    (player_name_B, player_id_B, creature_name_B, creature_id_B),
+    (request.player_name_A, request.player_id_A, request.creature_name_A, request.creature_id_A),
+    (request.player_name_B, request.player_id_B, request.creature_name_B, request.creature_id_B),
   ]
 
   result = {}
@@ -79,7 +69,6 @@ def nn_graph(
       elif 'bias' in key:
         biases.append(tensor.tolist())
 
-    # Normalize activations per layer
     normalized_activations = []
     for epoch_entry in activations_history:
       epoch_layers = []
