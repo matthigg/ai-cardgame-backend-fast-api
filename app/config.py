@@ -78,7 +78,7 @@ CREATURE_TEMPLATES = {
     'special_abilities': ['stun'],
     'nn_config': {
       **CREATURE_NN_CONFIG,
-    'hidden_sizes': [4, 8, 10, 3],
+      'hidden_sizes': [4, 8, 10, 3],
     },
     'reward_config': CREATURE_REWARD_CONFIG,
   },
