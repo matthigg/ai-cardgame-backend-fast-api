@@ -10,18 +10,18 @@ from app.modules.utils import get_checkpoint_path
 router = APIRouter()
 
 @router.get("/train")
-def train_endpoint():
+def train_endpoint(
+  player_name_A: str,
+  player_id_A: int,
+  creature_name_A: str,
+  creature_id_A: int,
+  player_name_B: str,
+  player_id_B: int,
+  creature_name_B: str,
+  creature_id_B: int
+):
+  
   """Run full training loop and save checkpoints, returning final summary."""
-
-  player_name_A = 'Alice'
-  player_id_A = 1
-  creature_name_A = 'Bear'
-  creature_id_A = 11
-
-  player_name_B = 'Bob'
-  player_id_B = 2
-  creature_name_B = 'Snake'
-  creature_id_B = 21
   
   result = training_loop(
     player_name_A, player_id_A, creature_name_A, creature_id_A,
@@ -39,7 +39,16 @@ def get_summary():
   return {"error": "Summary not available yet"}
 
 @router.get("/nn-graph")
-def nn_graph():
+def nn_graph(
+  player_name_A: str,
+  player_id_A: int,
+  creature_name_A: str,
+  creature_id_A: int,
+  player_name_B: str,
+  player_id_B: int,
+  creature_name_B: str,
+  creature_id_B: int
+):
   """
   Return weights, biases, and normalized activations_history
   for Alice's Bear and Bob's Snake.
@@ -47,8 +56,8 @@ def nn_graph():
 
   # --- Hardcode the same players/creatures used in /train ---
   creatures = [
-    ("Alice", 1, "Bear", 11),
-    ("Bob", 2, "Snake", 21),
+    (player_name_A, player_id_A, creature_name_A, creature_id_A),
+    (player_name_B, player_id_B, creature_name_B, creature_id_B),
   ]
 
   result = {}
