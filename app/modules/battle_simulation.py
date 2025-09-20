@@ -51,6 +51,9 @@ def simulate_battle(creature_A, creature_B, epoch, max_ticks, epsilons):
       result = check_for_knockouts()
       if result:
         return (*result, last_input_A, last_input_B)
+      
+      if 'poison' in creature.statuses:
+        abl_zero_reward(creature, opponent, '*POISONED*', 97)
 
       if 'stun' in creature.statuses:
         abl_zero_reward(creature, opponent, '*STUNNED*', 3)
