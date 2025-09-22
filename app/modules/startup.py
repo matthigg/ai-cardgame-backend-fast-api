@@ -1,5 +1,5 @@
 # app/modules/startup.py
-from app.modules.player_factory import create_player
+from app.modules.player_manager import create_player
 
 def bootstrap_players():
 

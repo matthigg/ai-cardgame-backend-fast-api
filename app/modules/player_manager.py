@@ -1,56 +1,94 @@
-# app/modules/player_manager.py
+# app/modules/player_factory.py
 import os
-from typing import Dict
-from app.modules.player import Player, load_player, save_player
-# from app.config import CREATURE_TEMPLATES, PLAYER_TEMPLATES
+import itertools
+import json
+import torch
+from app.modules.creature_manager import Creature, build_nn_for_creature
+from app.modules.utils import get_checkpoint_path, get_player_json_path
+from app.config import CREATURE_TEMPLATES, PLAYERS_DIR
 
-# Active player registry
-# Key: "name_id"
-_active_players: Dict[str, Player] = {}
+# global unique player id counter
+_player_id_counter = itertools.count(1)
 
-def _make_key(name: str, pid: int) -> str:
-  return f"{name}_{pid}"
+class Player:
+  def __init__(self, name, player_id=None):
+    self.id = player_id or next(_player_id_counter)
+    self.name = name
+    self.creatures = []   # list of Creature instances
 
-def get_active_player(name: str, pid: int) -> Player | None:
-  return _active_players.get(_make_key(name, pid))
+  def add_creature(self, creature):
+    self.creatures.append(creature)
 
-# def add_active_player(name: str, pid: int, players_dir="players") -> Player | None:
-#   key = _make_key(name, pid)
-#   if key in _active_players:
-#     return _active_players[key]  # already active
+  def reset(self):
+    for c in self.creatures:
+      c.reset()
 
-#   os.makedirs(players_dir, exist_ok=True)
-#   path = os.path.join(players_dir, f"player_{pid}.json")
+  def to_dict(self):
+    return {
+      "id": self.id,
+      "name": self.name,
+      "creatures": [c.name for c in self.creatures]
+    }
 
-#   # Init all creatures from templates
-#   creatures, _ = init_creatures(CREATURE_TEMPLATES)
+  @classmethod
+  def from_dict(cls, data, all_creatures):
+    player = cls(data['name'], data['id'])
+    for cname in data['creatures']:
+      if cname in all_creatures:
+        player.add_creature(all_creatures[cname])
+    return player
 
-#   if os.path.exists(path):
-#     # Load existing player file
-#     player = load_player(path, creatures)
-#   else:
-#     # Create new player from template
-#     template = PLAYER_TEMPLATES.get(pid, {"name": name, "creatures": []})
-#     player = Player(template["name"], pid)
+def save_player(player: Player):
+  os.makedirs(PLAYERS_DIR, exist_ok=True)
+  path = os.path.join(PLAYERS_DIR, f"player_{player.id}.json")
+  with open(path, "w") as f:
+    json.dump(player.to_dict(), f, indent=2)
+  return path
 
-#     for cdata in template.get("creatures", []):
-#       ckey = cdata["template"]  # template key
-#       cid = cdata["id"]         # unique creature ID
-#       if ckey in CREATURE_TEMPLATES:
-#         # create persistent creature per player with correct ID
-#         creature = create_creature(ckey, owner=player.name, creature_id=cid)
-#         add_active_creature(creature)
-#         player.add_creature(creature)
+def load_player(path, all_creatures):
+  with open(path, "r") as f:
+    data = json.load(f)
+  return Player.from_dict(data, all_creatures)
 
-#     # Save the newly created player
-#     save_player(player)
+def create_player(name: str, creature_keys: list):
+  """Create a Player instance, its creatures, and checkpoint files."""
+  player = Player(name)
 
-#   _active_players[key] = player
-#   return player
+  for idx, key in enumerate(creature_keys):
+    template = CREATURE_TEMPLATES[key]
 
+    # Unique creature ID: player.id * 10 + idx + 1
+    creature_id = player.id * 10 + (idx + 1)
+    nn_model = build_nn_for_creature(template)
 
-def remove_active_player(name: str, pid: int):
-  _active_players.pop(_make_key(name, pid), None)
+    # Create optimizer for the creature
+    optimizer = torch.optim.Adam(
+      nn_model.parameters(),
+      lr=template.get('nn_config', {}).get('learning_rate', 0.001)
+    )
 
-def list_active_players():
-  return list(_active_players.keys())
+    # Save initial checkpoint with valid optimizer state
+    checkpoint_path = get_checkpoint_path(player.name, player.id, template['name'], creature_id)
+    torch.save({
+      "model_state_dict": nn_model.state_dict(),
+      "optimizer_state_dict": optimizer.state_dict(),
+      "activations_history": []
+    }, checkpoint_path)
+
+    # Create Creature instance and add checkpoint path
+    creature = Creature(template['name'], player.name, nn_model, template, creature_id)
+    creature_data = creature.to_dict()
+    creature_data['nn_checkpoint'] = checkpoint_path
+
+    player.add_creature(creature)
+
+  # Save player.json
+  player_json_path = get_player_json_path(player.name, player.id)
+  with open(player_json_path, "w") as f:
+    json.dump({
+      "id": player.id,
+      "name": player.name,
+      "creatures": [c.to_dict() for c in player.creatures]
+    }, f, indent=2)
+
+  return player, player_json_path
