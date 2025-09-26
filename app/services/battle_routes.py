@@ -8,7 +8,7 @@ from app.config import CONFIG
 from app.modules.training_loop import training_loop
 from app.modules.utils import get_checkpoint_path
 
-router = APIRouter()
+router = APIRouter(tags=["battle"])
 
 class TrainRequest(BaseModel):
   player_name_A: str
