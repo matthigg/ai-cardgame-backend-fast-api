@@ -33,7 +33,7 @@ def login_player(req: LoginRequest):
   matches = glob.glob(pattern)
 
   if not matches:
-    raise HTTPException(status_code=404, detail="Player not found")
+    raise HTTPException(status_code=404, detail=f"Player {player_name} not found")
 
   # Assuming unique player names => first match is the player
   with open(matches[0], "r") as f:
@@ -56,7 +56,7 @@ def create_new_player(req: CreatePlayerRequest):
   if creature not in CREATURE_TEMPLATES:
     raise HTTPException(
       status_code=400,
-      detail=f"Invalid creature '{creature}'. Use /players/creature-templates for valid names."
+      detail=f"Invalid creature '{creature}'."
     )
 
   # Ensure no duplicate player

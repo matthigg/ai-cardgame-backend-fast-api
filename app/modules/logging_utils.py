@@ -38,7 +38,7 @@ def write_logs(batched_logs, last_epochs, finalLog, final_wins=None):
         f.write(f"Epoch {epoch}\n")
         f.write(f"Wins - {wins_A} | {wins_B}\n\n")
         for entry in battle_log:
-          f.write(f"{entry['tick']:3} | {entry['creature']} | {entry['action']:11} "
+          f.write(f"{entry['tick']:3} | {entry['creature']:7} | {entry['action']:11} "
                   f"{entry['hp']:3} | {entry['energy']:3} | {entry['reward']:5.2f} | "
                   f"{str(entry['statuses']):14} {[f'{p:.2f}' for p in entry['probs']]}\n")
         f.write('\n')
