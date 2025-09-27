@@ -60,7 +60,7 @@ def create_new_player(req: CreatePlayerRequest):
     )
 
   # Ensure no duplicate player
-  pattern = os.path.join(PLAYERS_DIR, f"{name}_*.json")
+  pattern = os.path.join(GENERATED_DIR, PLAYERS_DIR, f"{name}_*.json")
   if glob.glob(pattern):
     raise HTTPException(status_code=409, detail="Player name already exists")
 
