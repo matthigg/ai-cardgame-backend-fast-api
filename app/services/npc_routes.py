@@ -12,7 +12,7 @@ class CreateNpcRequest(BaseModel):
   name: str
   creature: str
 
-@router.post("/npc/create")
+@router.post("/create")
 def create_new_npc(req: CreateNpcRequest):
   name = req.name.strip()
   creature = req.creature.strip()
@@ -29,7 +29,7 @@ def create_new_npc(req: CreateNpcRequest):
   with open(path, "r") as f:
     return json.load(f)
 
-# ----------  4) Get All NPC Data ----------
+# ----------  Get All NPC Data ----------
 @router.get("/npcs")
 def get_all_npcs():
   """
