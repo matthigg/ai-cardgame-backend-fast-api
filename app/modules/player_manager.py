@@ -4,8 +4,8 @@ import itertools
 import json
 import torch
 from app.modules.creature_manager import Creature, build_nn_for_creature
-from app.modules.utils import get_checkpoint_path, get_player_json_path
-from app.config import CREATURE_TEMPLATES, PLAYERS_DIR
+from app.modules.utils import get_checkpoint_path, get_npc_json_path, get_player_json_path
+from app.config import CREATURE_TEMPLATES, GENERATED_DIR, NPCS_DIR, PLAYERS_DIR
 
 # global unique player id counter
 _player_id_counter = itertools.count(1)
@@ -92,3 +92,51 @@ def create_player(name: str, creature_keys: list):
     }, f, indent=2)
 
   return player, player_json_path
+
+def create_npc(name: str, creature_keys: list):
+  """
+  Create an NPC with one or more creatures.
+  Stores its JSON in generated/npcs instead of players.
+  """
+  os.makedirs(os.path.join(GENERATED_DIR, NPCS_DIR), exist_ok=True)
+
+  npc = Player(name)  # reuse Player class as a container
+
+  for idx, key in enumerate(creature_keys):
+    template = CREATURE_TEMPLATES[key]
+
+    # Unique creature ID: npc.id * 10 + idx + 1
+    creature_id = npc.id * 10 + (idx + 1)
+    nn_model = build_nn_for_creature(template)
+
+    optimizer = torch.optim.Adam(
+      nn_model.parameters(),
+      lr=template.get("nn_config", {}).get("learning_rate", 0.001)
+    )
+
+    checkpoint_path = get_checkpoint_path(
+      npc.name, npc.id, template["name"], creature_id
+    )
+    torch.save({
+      "model_state_dict": nn_model.state_dict(),
+      "optimizer_state_dict": optimizer.state_dict(),
+      "activations_history": []
+    }, checkpoint_path)
+
+    creature = Creature(template["name"], npc.name, nn_model, template, creature_id)
+    creature_data = creature.to_dict()
+    creature_data["nn_checkpoint"] = checkpoint_path
+
+    npc.add_creature(creature)
+
+  # Save npc.json
+  npc_json_path = get_npc_json_path(npc.name, npc.id)
+  with open(npc_json_path, "w") as f:
+    json.dump({
+      "id": npc.id,
+      "name": npc.name,
+      "type": "npc",  # optional discriminator
+      "creatures": [c.to_dict() for c in npc.creatures]
+    }, f, indent=2)
+
+  return npc, npc_json_path

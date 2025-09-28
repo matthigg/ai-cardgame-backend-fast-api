@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.services import battle_routes
 from app.services import player_routes   # 👈 import your player routes
 import os
+from app.modules.startup import bootstrap_players, bootstrap_npcs
 
 app = FastAPI()
 
@@ -27,7 +28,5 @@ app.add_middleware(
 app.include_router(battle_routes.router, prefix="/battle", tags=["Battle"])
 app.include_router(player_routes.router, prefix="/player", tags=["Player"])
 
-# Bootstrap
-from app.modules.startup import bootstrap_players
-
 bootstrap_players()
+bootstrap_npcs()

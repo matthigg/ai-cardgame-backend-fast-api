@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from app.config import ACTION_NAMES, BATTLE_LOGS_DIR, CHECKPOINT_DIR, GENERATED_DIR, PLAYERS_DIR
+from app.config import ACTION_NAMES, BATTLE_LOGS_DIR, CHECKPOINT_DIR, GENERATED_DIR, NPCS_DIR, PLAYERS_DIR
 
 # Ensure root generated directory exists
 os.makedirs(GENERATED_DIR, exist_ok=True)
@@ -35,6 +35,13 @@ def get_player_json_path(player_name: str, player_id: int):
     GENERATED_DIR,
     PLAYERS_DIR,
     f"{player_name.lower()}_{player_id}.json"
+  )
+
+def get_npc_json_path(name: str, npc_id: int) -> str:
+  return os.path.join(
+    GENERATED_DIR, 
+    NPCS_DIR, 
+    f"{name}_{npc_id}.json"
   )
 
 def get_checkpoint_path(player_name: str, player_id: int, creature_name: str, creature_id: int):
