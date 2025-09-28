@@ -5,7 +5,7 @@ import json
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from app.modules.player_manager import create_player
-from app.config import CREATURE_TEMPLATES, GENERATED_DIR, NPCS_DIR, PLAYERS_DIR
+from app.config import CREATURE_TEMPLATES, GENERATED_DIR, PLAYERS_DIR
 
 router = APIRouter(tags=["player"])
 

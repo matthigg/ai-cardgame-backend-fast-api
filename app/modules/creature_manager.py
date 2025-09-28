@@ -1,11 +1,9 @@
 # app/modules/creature_manager.py
-import os
-import json
-import torch
+import os, json, torch
 import numpy as np
-from app.config import ACTION_NAMES, CONFIG, CREATURE_BASE_STATS, CREATURE_REWARD_CONFIG, CREATURE_TEMPLATES, DOT_DAMAGE, SPECIAL_ABILITIES
+from app.config import ACTION_NAMES, CREATURE_BASE_STATS, CREATURE_REWARD_CONFIG, CREATURE_TEMPLATES, DOT_DAMAGE, SPECIAL_ABILITIES
 from app.modules.neural_network import NeuralNetwork
-from app.modules.utils import get_player_json_path, get_checkpoint_path
+from app.modules.utils import get_player_json_path, get_npc_json_path
 
 class Creature:
   def __init__(self, name, owner, nn_model, config_stats, creature_id):
@@ -145,28 +143,39 @@ def fetch_creature_from_template(template_key: str, owner: str, creature_id: int
   )
   return creature
 
-def fetch_creature_from_player_json(
-  player_name: str,
-  player_id: int,
-  creature_id: int
-):
+def fetch_creature_from_player_json(player_name: str, player_id: int, creature_id: int):
+  candidate_paths = [
+    get_player_json_path(player_name, player_id),
+    get_npc_json_path(player_name, player_id)
+  ]
+  player_json_path = next((p for p in candidate_paths if os.path.exists(p)), None)
+  if not player_json_path:
+    raise FileNotFoundError(f"Player JSON not found for {player_name} ({player_id})")
 
-  """Load a Creature from player.json and resume from checkpoint."""
-  player_path = get_player_json_path(player_name, player_id)
-  if not os.path.exists(player_path):
-    return None
-
-  with open(player_path, "r") as f:
+  with open(player_json_path, "r") as f:
     player_data = json.load(f)
 
-  creature_entry = next((c for c in player_data['creatures'] if c['id'] == creature_id), None)
-  if not creature_entry:
+  creature_data = next((c for c in player_data["creatures"] if c["id"] == creature_id), None)
+  if creature_data is None:
     return None
 
-  # Build NN and load checkpoint
-  nn_model = build_nn_for_creature(creature_entry)
-  checkpoint_path = creature_entry.get('nn_checkpoint')
+  template = CREATURE_TEMPLATES[creature_data["name"]]
+  nn_model = build_nn_for_creature(template)
+
+  checkpoint_path = creature_data.get("nn_checkpoint")
   if checkpoint_path and os.path.exists(checkpoint_path):
-    checkpoint = torch.load(checkpoint_path)
-    nn_model.load_state_dict(checkpoint['model_state_dict'])
-  return Creature.from_dict(creature_entry, nn_model)
+    ckpt = torch.load(checkpoint_path)
+    nn_model.load_state_dict(ckpt["model_state_dict"])
+
+  creature = Creature(
+    name=creature_data["name"],
+    owner=player_name,
+    nn_model=nn_model,
+    config_stats=creature_data,  # ✅ correct argument
+    creature_id=creature_id
+  )
+
+  if "runtime_state" in creature_data:
+    creature.runtime_state = creature_data["runtime_state"]
+
+  return creature
