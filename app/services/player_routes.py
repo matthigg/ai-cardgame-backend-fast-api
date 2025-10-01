@@ -40,8 +40,50 @@ def login_player(req: LoginRequest):
     data = json.load(f)
   return data
 
+# ----------  2) Logout ----------
+@router.post("/logout")
+def logout_player(req: LoginRequest):
+  """
+  Delete the player's JSON file and all corresponding creature
+  .pt files in generated/checkpoints.
+  """
+  player_name = req.name.strip()
+  if not player_name:
+    raise HTTPException(status_code=400, detail="Player name cannot be empty")
 
-# ----------  2) Create Player ----------
+  # --- Delete player file ---
+  player_pattern = os.path.join(GENERATED_DIR, PLAYERS_DIR, f"{player_name}_*.json")
+  player_matches = glob.glob(player_pattern)
+  if not player_matches:
+    raise HTTPException(status_code=404, detail=f"Player {player_name} not found")
+
+  for path in player_matches:
+    try:
+      os.remove(path)
+    except Exception as e:
+      raise HTTPException(status_code=500, detail=f"Failed to delete player file: {str(e)}")
+
+  # --- Delete all creature checkpoints for this player ---
+  checkpoint_dir = os.path.join(GENERATED_DIR, "checkpoints")
+  checkpoint_pattern = os.path.join(checkpoint_dir, f"{player_name}_*.pt")
+  checkpoint_matches = glob.glob(checkpoint_pattern)
+
+  deleted_checkpoints = []
+  for path in checkpoint_matches:
+    try:
+      os.remove(path)
+      deleted_checkpoints.append(os.path.basename(path))
+    except Exception as e:
+      raise HTTPException(status_code=500, detail=f"Failed to delete checkpoint {path}: {str(e)}")
+
+  return {
+    "status": "success",
+    "message": f"Player {player_name} and {len(deleted_checkpoints)} checkpoints deleted",
+    "deleted_checkpoints": deleted_checkpoints,
+  }
+
+
+# ----------  3) Create Player ----------
 @router.post("/create")
 def create_new_player(req: CreatePlayerRequest):
   """
@@ -71,7 +113,7 @@ def create_new_player(req: CreatePlayerRequest):
   return data
 
 
-# ----------  3) Get Creature Templates ----------
+# ----------  4) Get Creature Templates ----------
 @router.get("/creature-templates")
 def get_creature_templates():
   """

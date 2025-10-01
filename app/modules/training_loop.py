@@ -55,7 +55,6 @@ def training_loop(
   if creature_B is None:
     raise ValueError(f"Creature {creature_id_B} for player {player_name_B} not found.")
 
-  print('--- creature_A: ', creature_A)
   optimizer_A = torch.optim.Adam(
     creature_A.nn.parameters(),
     lr=creature_A.nn_config.get('learning_rate', 0.001)
