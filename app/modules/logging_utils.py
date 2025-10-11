@@ -26,13 +26,13 @@ def append_battle_log(epoch, tick, creature, opponent, battle_log, action_name, 
 # ------------------ Batched Logging ------------------
 
 def write_logs(batched_logs, last_epochs, finalLog, final_wins=None):
-  """Write batched logs or final summary to disk."""
+  """Write batched logs or final summary to disk in owner:name key format."""
   start_epoch = batched_logs[0][0] if batched_logs else 0
   end_epoch = batched_logs[-1][0] if batched_logs else 0
   filename = os.path.join(GENERATED_DIR, BATTLE_LOGS_DIR, f'battle_log_{start_epoch:04d}_{end_epoch:04d}.txt')
   filenameFinal = os.path.join(GENERATED_DIR, BATTLE_LOGS_DIR, 'summary.txt')
 
-  # Write normal logs
+  # Normal logs
   if not finalLog and CONFIG['write_battle_logs']:
     with open(filename, 'w') as f:
       for epoch, battle_log, reward_A, reward_B, wins_A, wins_B in batched_logs:
@@ -48,11 +48,10 @@ def write_logs(batched_logs, last_epochs, finalLog, final_wins=None):
 
   summary_data = None
 
-  # Write final summary log
   if finalLog and final_wins and CONFIG['write_battle_summary_log']:
     epoch_batch_size = CONFIG['epoch_batch_size']
 
-    # Gather all observed (creature_name, owner_name) pairs
+    # Gather observed (name, owner) pairs
     observed_pairs = set()
     for epoch, battle_log, _, _, _, _ in batched_logs:
       for entry in battle_log:
@@ -60,50 +59,60 @@ def write_logs(batched_logs, last_epochs, finalLog, final_wins=None):
         owner = entry.get('owner', 'unknown')
         observed_pairs.add((name, owner))
 
-    # Initialize stats for each observed pair
+    # Initialize stats for each pair
     total_stats = {}
     for name, owner in observed_pairs:
-      key = f"{name} ({owner})"
+      key = f"{owner}:{name}"  # <-- owner:name format
       total_stats[key] = {
         'attack': 0, 'defend': 0, 'poison': 0, 'stun': 0,
         'recover': 0, 'knockout': 0, 'stunned': 0,
         'poisoned': 0, 'stalemates': 0
       }
 
-    # Map raw actions to stat keys
-    action_map = {
-      'attack': 'attack',
-      'defend': 'defend',
-      'recover': 'recover',
-      'poison': 'poison',
-      'stun': 'stun',
-      '*KNOCKOUT*': 'knockout',
-      '*STUNNED*': 'stunned',
-      '*POISONED*': 'poisoned',
-      '*STALEMATE*': 'stalemates'
-    }
-
-    # Count actions per (name, owner)
+    # Count actions per battle entry
     for epoch, battle_log, _, _, _, _ in batched_logs:
       for entry in battle_log:
         name = entry.get('creature', 'unknown')
         owner = entry.get('owner', 'unknown')
-        key = f"{name} ({owner})"
+        key = f"{owner}:{name}"
 
         if key not in total_stats:
-          total_stats[key] = {k: 0 for k in ['attack','defend','poison','stun','recover','knockout','stunned','poisoned','stalemates']}
+          total_stats[key] = {
+            'attack': 0, 'defend': 0, 'poison': 0, 'stun': 0,
+            'recover': 0, 'knockout': 0, 'stunned': 0,
+            'poisoned': 0, 'stalemates': 0
+          }
 
         action_raw = entry.get('action', '')
-        stat_key = action_map.get(action_raw, None)
-        if stat_key:
-          total_stats[key][stat_key] += 1
+        action = str(action_raw).strip().lower()
+
+        # Explicit states first
+        if 'stunned' in action:
+          total_stats[key]['stunned'] += 1
+        elif 'poisoned' in action:
+          total_stats[key]['poisoned'] += 1
+        elif 'knockout' in action:
+          total_stats[key]['knockout'] += 1
+        elif 'stalemate' in action:
+          total_stats[key]['stalemates'] += 1
+        # Generic actions
+        elif 'attack' in action:
+          total_stats[key]['attack'] += 1
+        elif 'defend' in action:
+          total_stats[key]['defend'] += 1
+        elif 'recover' in action:
+          total_stats[key]['recover'] += 1
+        elif 'poison' in action:
+          total_stats[key]['poison'] += 1
+        elif 'stun' in action:
+          total_stats[key]['stun'] += 1
 
     # Build summary_data
     summary_data = {}
     for name, owner in observed_pairs:
-      key = f"{name} ({owner})"
-      total_wins = final_wins.get(name, 0)
-      total_epochs = last_epochs.get(name, 0)
+      key = f"{owner}:{name}"  # <-- owner:name
+      total_wins = final_wins.get(key, final_wins.get(name, 0))
+      total_epochs = last_epochs.get(key, last_epochs.get(name, 0))
 
       summary_data[key] = {
         "name": name,
@@ -111,15 +120,19 @@ def write_logs(batched_logs, last_epochs, finalLog, final_wins=None):
         "totalWins": total_wins,
         "avgWins": total_wins / epoch_batch_size if epoch_batch_size else 0,
         "totalEpochs": total_epochs,
-        "stats": total_stats.get(key, {k: 0 for k in ['attack','defend','poison','stun','recover','knockout','stunned','poisoned','stalemates']})
+        "stats": total_stats.get(key, {
+          'attack': 0, 'defend': 0, 'poison': 0, 'stun': 0,
+          'recover': 0, 'knockout': 0, 'stunned': 0,
+          'poisoned': 0, 'stalemates': 0
+        })
       }
 
-    # Write JSON file
+    # Write JSON
     filenameJson = os.path.join(GENERATED_DIR, BATTLE_LOGS_DIR, 'summary.json')
     with open(filenameJson, 'w') as fjson:
       json.dump(summary_data, fjson, indent=2)
 
-    # Write final text summary
+    # Write text summary
     with open(filenameFinal, 'w') as f:
       for key, data in summary_data.items():
         f.write("---------------------------------------------------------------\n")
@@ -135,4 +148,5 @@ def write_logs(batched_logs, last_epochs, finalLog, final_wins=None):
       f.write(f"Epoch Batch Size: {epoch_batch_size}\n")
       f.write("---------------------------------------------------------------\n")
 
+  print('==== summary_data: ', summary_data)
   return summary_data
