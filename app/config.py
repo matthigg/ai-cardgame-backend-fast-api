@@ -90,7 +90,7 @@ CREATURE_TEMPLATES = {
     'special_abilities': ['poison'],
     'nn_config': {
       **CREATURE_NN_CONFIG,
-      'hidden_sizes': [20, 20, 20],
+      'hidden_sizes': [5, 5, 5],
     },
     'reward_config': CREATURE_REWARD_CONFIG,
   }

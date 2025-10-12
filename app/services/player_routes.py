@@ -41,8 +41,8 @@ def login_player(req: LoginRequest):
   return data
 
 # ----------  2) Logout ----------
-@router.post("/logout")
-def logout_player(req: LoginRequest):
+@router.post("/delete")
+def delete_player(req: LoginRequest):
   """
   Delete the player's JSON file and all corresponding creature
   .pt files in generated/checkpoints.
