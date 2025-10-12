@@ -7,7 +7,6 @@ from app.modules.battle_simulation import simulate_battle
 from app.modules.logging_utils import write_logs
 from app.modules.neural_network import reinforce_update
 from app.modules.network_persistence import resume_from_checkpoint, save_checkpoints
-from app.modules.utils import get_checkpoint_path
 
 def capture_activations(creature, input_tensor):
   """Return normalized neuron activations for visualization."""
@@ -75,6 +74,10 @@ def training_loop(
 
   batched_logs, batched_logs_total = [], []
 
+  # Initialize current_epoch on each creature
+  creature_A.current_epoch = 0
+  creature_B.current_epoch = 0
+
   for epoch in range(CONFIG['epoch_batch_size']):
     epsilon_A = max(nn_config_A.get('eps_min', 0.05), epsilon_A * nn_config_A.get('eps_decay_rate', 0.99))
     epsilon_B = max(nn_config_B.get('eps_min', 0.05), epsilon_B * nn_config_B.get('eps_decay_rate', 0.99))
@@ -99,7 +102,7 @@ def training_loop(
     batched_logs_total.append((epoch, battle_log, reward_A, reward_B,
                                wins.get(creature_A.name, 0), wins.get(creature_B.name, 0)))
 
-    # Track current epoch on each creature for robust logging
+    # Track current epoch on each creature
     creature_A.current_epoch = epoch + 1
     creature_B.current_epoch = epoch + 1
 
@@ -117,7 +120,7 @@ def training_loop(
       })
 
     if len(batched_logs) % CONFIG['max_ticks'] == 0:
-      write_logs(batched_logs, {}, finalLog=False)
+      write_logs(batched_logs, finalLog=False, creatures=(creature_A, creature_B))
       batched_logs = []
 
   print('============= SAVE ==========================')
@@ -126,15 +129,7 @@ def training_loop(
     player_name_A, player_id_A, player_name_B, player_id_B
   )
 
-  # Use the tracked current_epoch values
-  last_epochs = {
-    creature_A.name: getattr(creature_A, 'current_epoch', 0),
-    creature_B.name: getattr(creature_B, 'current_epoch', 0)
-  }
-
-  print('=== last_epochs: ', last_epochs)
-
-  summary_data = write_logs(batched_logs_total, last_epochs, finalLog=True, final_wins=wins)
+  summary_data = write_logs(batched_logs_total, finalLog=True, final_wins=wins, creatures=(creature_A, creature_B))
 
   return {
     "summary": summary_data,

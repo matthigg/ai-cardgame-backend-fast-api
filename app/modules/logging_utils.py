@@ -25,8 +25,11 @@ def append_battle_log(epoch, tick, creature, opponent, battle_log, action_name, 
 
 # ------------------ Batched Logging ------------------
 
-def write_logs(batched_logs, last_epochs, finalLog, final_wins=None):
-  """Write batched logs or final summary to disk in owner:name key format."""
+def write_logs(batched_logs, finalLog=False, final_wins=None, creatures=None):
+  """Write batched logs or final summary to disk in owner:name key format.
+
+  If `creatures` is provided, automatically extract their current_epoch.
+  """
   start_epoch = batched_logs[0][0] if batched_logs else 0
   end_epoch = batched_logs[-1][0] if batched_logs else 0
   filename = os.path.join(GENERATED_DIR, BATTLE_LOGS_DIR, f'battle_log_{start_epoch:04d}_{end_epoch:04d}.txt')
@@ -62,7 +65,7 @@ def write_logs(batched_logs, last_epochs, finalLog, final_wins=None):
     # Initialize stats for each pair
     total_stats = {}
     for name, owner in observed_pairs:
-      key = f"{owner}:{name}"  # <-- owner:name format
+      key = f"{owner}:{name}"
       total_stats[key] = {
         'attack': 0, 'defend': 0, 'poison': 0, 'stun': 0,
         'recover': 0, 'knockout': 0, 'stunned': 0,
@@ -110,13 +113,17 @@ def write_logs(batched_logs, last_epochs, finalLog, final_wins=None):
     # Build summary_data
     summary_data = {}
     for name, owner in observed_pairs:
-      key = f"{owner}:{name}"  # <-- owner:name
+      key = f"{owner}:{name}"
 
-      print('=== key: ', key)
-      print('=== last_epochs: ', last_epochs)
+      # Automatically fetch current_epoch from creature if available
+      total_epochs = 0
+      if creatures:
+        for c in creatures:
+          if c.name == name:
+            total_epochs = getattr(c, 'current_epoch', 0)
+            break
 
       total_wins = final_wins.get(key, final_wins.get(name, 0))
-      total_epochs = last_epochs.get(key, last_epochs.get(name, 0))
 
       summary_data[key] = {
         "name": name,
@@ -152,5 +159,4 @@ def write_logs(batched_logs, last_epochs, finalLog, final_wins=None):
       f.write(f"Epoch Batch Size: {epoch_batch_size}\n")
       f.write("---------------------------------------------------------------\n")
 
-  # print('==== summary_data: ', summary_data)
   return summary_data
