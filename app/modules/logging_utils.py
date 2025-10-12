@@ -111,6 +111,10 @@ def write_logs(batched_logs, last_epochs, finalLog, final_wins=None):
     summary_data = {}
     for name, owner in observed_pairs:
       key = f"{owner}:{name}"  # <-- owner:name
+
+      print('=== key: ', key)
+      print('=== last_epochs: ', last_epochs)
+
       total_wins = final_wins.get(key, final_wins.get(name, 0))
       total_epochs = last_epochs.get(key, last_epochs.get(name, 0))
 
@@ -148,5 +152,5 @@ def write_logs(batched_logs, last_epochs, finalLog, final_wins=None):
       f.write(f"Epoch Batch Size: {epoch_batch_size}\n")
       f.write("---------------------------------------------------------------\n")
 
-  print('==== summary_data: ', summary_data)
+  # print('==== summary_data: ', summary_data)
   return summary_data

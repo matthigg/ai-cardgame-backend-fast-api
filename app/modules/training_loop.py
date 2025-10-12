@@ -40,15 +40,10 @@ def training_loop(
   player_name_A: str, player_id_A: int, creature_name_A: str, creature_id_A: int,
   player_name_B: str, player_id_B: int, creature_name_B: str, creature_id_B: int,
 ):
-
   """Run training loop between two creatures defined in player JSON files."""
 
-  creature_A = fetch_creature_from_player_json(
-    player_name_A, player_id_A, creature_id_A
-  )
-  creature_B = fetch_creature_from_player_json(
-    player_name_B, player_id_B, creature_id_B
-  )
+  creature_A = fetch_creature_from_player_json(player_name_A, player_id_A, creature_id_A)
+  creature_B = fetch_creature_from_player_json(player_name_B, player_id_B, creature_id_B)
 
   if creature_A is None:
     raise ValueError(f"Creature {creature_id_A} for player {player_name_A} not found.")
@@ -65,7 +60,6 @@ def training_loop(
   )
 
   print('============= RESUME ==========================')
-  # Resume from checkpoint
   resume_from_checkpoint(
     creature_A, creature_B, optimizer_A, optimizer_B,
     player_name_A, player_id_A, player_name_B, player_id_B
@@ -89,16 +83,14 @@ def training_loop(
       creature_A, creature_B, epoch, CONFIG['max_ticks'], (epsilon_A, epsilon_B)
     )
 
-    if winner and winner != 'stalemate':
-      if winner in wins:
-        wins[winner] += 1
+    if winner and winner != 'stalemate' and winner in wins:
+      wins[winner] += 1
 
     reinforce_update(creature_A, optimizer_A, battle_log, baseline_A, nn_config_A.get('entropy_beta', 0.0))
     reinforce_update(creature_B, optimizer_B, battle_log, baseline_B, nn_config_B.get('entropy_beta', 0.0))
 
     alpha_A = nn_config_A.get('alpha_baseline', 0.0)
     alpha_B = nn_config_B.get('alpha_baseline', 0.0)
-
     baseline_A = (1 - alpha_A) * baseline_A + alpha_A * reward_A
     baseline_B = (1 - alpha_B) * baseline_B + alpha_B * reward_B
 
@@ -106,6 +98,10 @@ def training_loop(
                          wins.get(creature_A.name, 0), wins.get(creature_B.name, 0)))
     batched_logs_total.append((epoch, battle_log, reward_A, reward_B,
                                wins.get(creature_A.name, 0), wins.get(creature_B.name, 0)))
+
+    # Track current epoch on each creature for robust logging
+    creature_A.current_epoch = epoch + 1
+    creature_B.current_epoch = epoch + 1
 
     if state_tensor_A is not None:
       creature_A.activations_history.append({
@@ -125,16 +121,18 @@ def training_loop(
       batched_logs = []
 
   print('============= SAVE ==========================')
-  # Save checkpoints including optimizer and activations
   save_checkpoints(
     creature_A, creature_B, optimizer_A, optimizer_B,
     player_name_A, player_id_A, player_name_B, player_id_B
   )
 
+  # Use the tracked current_epoch values
   last_epochs = {
     creature_A.name: getattr(creature_A, 'current_epoch', 0),
     creature_B.name: getattr(creature_B, 'current_epoch', 0)
   }
+
+  print('=== last_epochs: ', last_epochs)
 
   summary_data = write_logs(batched_logs_total, last_epochs, finalLog=True, final_wins=wins)
 
