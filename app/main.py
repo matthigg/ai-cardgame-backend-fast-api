@@ -27,7 +27,7 @@ app.add_middleware(
 app.include_router(battle_routes.router, prefix="/battle", tags=["Battle"])
 app.include_router(player_routes.router, prefix="/player", tags=["Player"])
 app.include_router(npc_routes.router, prefix="/npc", tags=["NPC"])
-app.include_router(creature_routes.router, prefix="/api/creatures")
+app.include_router(creature_routes.router, prefix="/creatures", tags=["creatures"])
 
 bootstrap_players()
 bootstrap_npcs()

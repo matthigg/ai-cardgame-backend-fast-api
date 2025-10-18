@@ -1,4 +1,4 @@
-# app/modules/player_factory.py
+# app/modules/player_manager.py
 import os
 import itertools
 import json
@@ -14,7 +14,7 @@ class Player:
   def __init__(self, name, player_id=None):
     self.id = player_id or next(_player_id_counter)
     self.name = name
-    self.creatures = []   # list of Creature instances
+    self.creatures = []  # list of Creature instances
 
   def add_creature(self, creature):
     self.creatures.append(creature)
@@ -38,6 +38,7 @@ class Player:
         player.add_creature(all_creatures[cname])
     return player
 
+
 def save_player(player: Player):
   os.makedirs(PLAYERS_DIR, exist_ok=True)
   path = os.path.join(PLAYERS_DIR, f"player_{player.id}.json")
@@ -45,10 +46,12 @@ def save_player(player: Player):
     json.dump(player.to_dict(), f, indent=2)
   return path
 
+
 def load_player(path, all_creatures):
   with open(path, "r") as f:
     data = json.load(f)
   return Player.from_dict(data, all_creatures)
+
 
 def create_player(name: str, creature_keys: list):
   """Create a Player instance, its creatures, and checkpoint files."""
@@ -79,6 +82,7 @@ def create_player(name: str, creature_keys: list):
     creature = Creature(template['name'], player.name, nn_model, template, creature_id)
     creature_data = creature.to_dict()
     creature_data['nn_checkpoint'] = checkpoint_path
+    creature_data['creature_template_id'] = template.get('creature_template_id')  # <-- fixed
 
     player.add_creature(creature)
 
@@ -88,10 +92,17 @@ def create_player(name: str, creature_keys: list):
     json.dump({
       "id": player.id,
       "name": player.name,
-      "creatures": [c.to_dict() for c in player.creatures]
+      "creatures": [
+        dict(
+          c.to_dict(),
+          creature_template_id=CREATURE_TEMPLATES[creature_keys[idx]].get('creature_template_id')
+        )
+        for idx, c in enumerate(player.creatures)
+      ]
     }, f, indent=2)
 
   return player, player_json_path
+
 
 def create_npc(name: str, creature_keys: list):
   """
@@ -126,6 +137,7 @@ def create_npc(name: str, creature_keys: list):
     creature = Creature(template["name"], npc.name, nn_model, template, creature_id)
     creature_data = creature.to_dict()
     creature_data["nn_checkpoint"] = checkpoint_path
+    creature_data["creature_template_id"] = template.get('creature_template_id')  # <-- fixed
 
     npc.add_creature(creature)
 
@@ -135,8 +147,14 @@ def create_npc(name: str, creature_keys: list):
     json.dump({
       "id": npc.id,
       "name": npc.name,
-      "type": "npc",  # optional discriminator
-      "creatures": [c.to_dict() for c in npc.creatures]
+      "type": "npc",
+      "creatures": [
+        dict(
+          c.to_dict(),
+          creature_template_id=CREATURE_TEMPLATES[creature_keys[idx]].get('creature_template_id')
+        )
+        for idx, c in enumerate(npc.creatures)
+      ]
     }, f, indent=2)
 
   return npc, npc_json_path

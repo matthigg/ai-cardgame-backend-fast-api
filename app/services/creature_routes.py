@@ -17,6 +17,7 @@ class RecruitRequest(BaseModel):
 # ---------- 1) Get Creature Templates ----------
 @router.get("/templates")
 def get_creature_templates():
+  print('=== TEMPLATES ===')
   """
   Returns all creature templates defined in config.py.
   Used by the frontend recruitment page.
