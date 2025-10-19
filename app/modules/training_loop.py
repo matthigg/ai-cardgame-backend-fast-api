@@ -8,32 +8,71 @@ from app.modules.logging_utils import write_logs
 from app.modules.neural_network import reinforce_update
 from app.modules.network_persistence import resume_from_checkpoint, save_checkpoints
 
+# def capture_activations(creature, input_tensor):
+#   """Return normalized neuron activations for visualization."""
+#   activations = []
+
+#   def forward_hook(module, input, output):
+#     if isinstance(output, torch.Tensor):
+#       flat = output.detach().cpu().flatten()
+#       if flat.numel() > 0:
+#         min_val = flat.min()
+#         max_val = flat.max()
+#         normalized = (flat - min_val) / (max_val - min_val + 1e-8)
+#         activations.append(normalized.tolist())
+#       else:
+#         activations.append(flat.tolist())
+
+#   hooks = []
+#   for module in creature.nn.modules():
+#     if isinstance(module, torch.nn.Linear):
+#       hooks.append(module.register_forward_hook(forward_hook))
+
+#   creature.nn(input_tensor)
+
+#   for hook in hooks:
+#     hook.remove()
+
+#   return activations
+
 def capture_activations(creature, input_tensor):
-  """Return normalized neuron activations for visualization."""
-  activations = []
+    """Return normalized neuron activations for visualization, including input layer."""
+    activations = []
 
-  def forward_hook(module, input, output):
-    if isinstance(output, torch.Tensor):
-      flat = output.detach().cpu().flatten()
-      if flat.numel() > 0:
-        min_val = flat.min()
-        max_val = flat.max()
-        normalized = (flat - min_val) / (max_val - min_val + 1e-8)
-        activations.append(normalized.tolist())
-      else:
-        activations.append(flat.tolist())
+    # Normalize input layer and append first
+    if isinstance(input_tensor, torch.Tensor):
+        flat = input_tensor.detach().cpu().flatten()
+        if flat.numel() > 0:
+            min_val = flat.min()
+            max_val = flat.max()
+            normalized = (flat - min_val) / (max_val - min_val + 1e-8)
+            activations.append(normalized.tolist())
+        else:
+            activations.append(flat.tolist())
 
-  hooks = []
-  for module in creature.nn.modules():
-    if isinstance(module, torch.nn.Linear):
-      hooks.append(module.register_forward_hook(forward_hook))
+    # Hook for all Linear layers
+    def forward_hook(module, input, output):
+        if isinstance(output, torch.Tensor):
+            flat = output.detach().cpu().flatten()
+            if flat.numel() > 0:
+                min_val = flat.min()
+                max_val = flat.max()
+                normalized = (flat - min_val) / (max_val - min_val + 1e-8)
+                activations.append(normalized.tolist())
+            else:
+                activations.append(flat.tolist())
 
-  creature.nn(input_tensor)
+    hooks = []
+    for module in creature.nn.modules():
+        if isinstance(module, torch.nn.Linear):
+            hooks.append(module.register_forward_hook(forward_hook))
 
-  for hook in hooks:
-    hook.remove()
+    creature.nn(input_tensor)
 
-  return activations
+    for hook in hooks:
+        hook.remove()
+
+    return activations
 
 def training_loop(
   player_name_A: str, player_id_A: int, creature_name_A: str, creature_id_A: int,
