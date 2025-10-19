@@ -91,9 +91,6 @@ def training_loop(
   creature_B.current_epoch = 0
 
   for epoch in range(CONFIG['epoch_batch_size']):
-
-    print('=== epoch: ', epoch)
-    
     epsilon_A = max(nn_config_A.get('eps_min', 0.05), epsilon_A * nn_config_A.get('eps_decay_rate', 0.99))
     epsilon_B = max(nn_config_B.get('eps_min', 0.05), epsilon_B * nn_config_B.get('eps_decay_rate', 0.99))
 
