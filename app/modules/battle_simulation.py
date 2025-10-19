@@ -52,6 +52,8 @@ def simulate_battle(creature_A, creature_B, epoch, max_ticks, epsilons):
       if result:
         return (*result, last_input_A, last_input_B)
       
+      print('=== creature.statuses: ', creature.statuses)
+      
       if 'poison' in creature.statuses:
         abl_zero_reward(creature, opponent, '*POISONED*', 97)
 

@@ -73,14 +73,23 @@ class Creature:
 
   def is_alive(self):
     return self.hp > 0
-  
-  def process_statuses(self, opponent, abl_zero_reward):
-    for status in list(self.statuses.keys()):
+
+  def process_statuses(self, opponent, log_fn):
+    expired = []
+    for status, duration in list(self.statuses.items()):
       if status == 'poison':
-        self.hp -= DOT_DAMAGE['poison_damage']
-      self.statuses[status] -= 1
-      if self.statuses[status] <= 0:
-        del self.statuses[status]
+        self.hp = max(0, self.hp - 5)
+        self.statuses[status] -= 1
+      elif status == 'stun':
+        self.statuses[status] -= 1
+      elif status == 'defend':
+        expired.append('defend')
+
+      if self.statuses.get(status, 0) <= 0:
+        expired.append(status)
+
+    for e in expired:
+      del self.statuses[e]
   
   def reset(self):
     self.hp = self.max_hp

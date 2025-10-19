@@ -38,7 +38,7 @@ SPECIAL_ABILITIES = {
   },
   'stun': {
     'energy_cost': 40,
-    'apply': lambda c, o: o.statuses.update({'stun': 2}) if 'defend' not in o.statuses else None
+    'apply': lambda c, o: o.statuses.update({'stun': 2})
   }
 }
 
