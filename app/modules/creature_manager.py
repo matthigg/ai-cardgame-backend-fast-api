@@ -1,7 +1,7 @@
 # app/modules/creature_manager.py
 import os, json, torch
 import numpy as np
-from app.config import ACTION_NAMES, CREATURE_BASE_STATS, CREATURE_REWARD_CONFIG, CREATURE_TEMPLATES, DOT_DAMAGE, SPECIAL_ABILITIES
+from app.config import ACTION_NAMES, CONFIG, CREATURE_BASE_STATS, CREATURE_REWARD_CONFIG, CREATURE_TEMPLATES, DOT_DAMAGE, SPECIAL_ABILITIES
 from app.modules.neural_network import NeuralNetwork
 from app.modules.utils import get_player_json_path, get_npc_json_path
 
@@ -122,11 +122,10 @@ class Creature:
 # ------------------ Creature neural network functions ------------------
 
 def build_nn_for_creature(config_stats):
-  input_size = len(ACTION_NAMES)
-  output_size = 3 + len(config_stats.get('special_abilities', []))
-  hidden_sizes = config_stats.get('nn_config', {}).get('hidden_sizes')
-  nn_model = NeuralNetwork(input_size, hidden_sizes, output_size)
-  return nn_model
+  input_size = CONFIG["state_vector_length"]
+  output_size = 3 + len(config_stats.get("special_abilities", []))
+  hidden_sizes = config_stats.get("nn_config", {}).get("hidden_sizes", [4, 4])
+  return NeuralNetwork(input_size, hidden_sizes, output_size)
 
 # ------------------ Creature fetch functions ------------------
 

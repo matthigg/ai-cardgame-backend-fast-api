@@ -23,6 +23,8 @@ CONFIG = {
   'write_battle_logs': True,
   'write_battle_summary_log': True,
   'sort_logs_by_creature': False,
+
+  "state_vector_length": 15,
 }
 
 DOT_DAMAGE = {

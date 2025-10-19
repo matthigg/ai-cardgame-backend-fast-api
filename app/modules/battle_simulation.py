@@ -60,7 +60,7 @@ def simulate_battle(creature_A, creature_B, epoch, max_ticks, epsilons):
         continue
 
       # Create state tensor and store last input for visualization
-      state_tensor = create_state(creature, opponent)
+      state_tensor = create_state(creature, opponent, tick, max_ticks)
       if creature is creature_A:
         last_input_A = state_tensor
       else:
