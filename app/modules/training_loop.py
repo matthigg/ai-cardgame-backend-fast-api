@@ -76,6 +76,10 @@ def training_loop(
     player_name_A, player_id_A, player_name_B, player_id_B
   )
 
+  # Clear old visualization data, but keep model weights/biases
+  creature_A.activations_history = []
+  creature_B.activations_history = []
+
   nn_config_A = creature_A.nn_config
   nn_config_B = creature_B.nn_config
 
